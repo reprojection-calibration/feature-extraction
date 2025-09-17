@@ -4,9 +4,10 @@
 
 using namespace reprojection_calibration::feature_extraction;
 
-TEST(XXX, ZZZ) {
-    cv::Mat const image;
-    ExtractFeatures(image);
+TEST(FeatureExtraction, TestCheckboardExtraction) {
+    cv::Mat const image; // ADD IMAGE LOADING
+    TargetType const target_type{TargetType::Chessboard};
+    auto const [pixels, points]{ExtractFeatures(image, target_type)};
 
     EXPECT_FALSE(false);
 }
