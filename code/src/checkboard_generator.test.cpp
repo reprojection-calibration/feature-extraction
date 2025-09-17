@@ -4,4 +4,8 @@
 
 using namespace reprojection_calibration::feature_extraction;
 
-TEST(CheckboardGenerator, GGG) { EXPECT_FALSE(false); }
+TEST(CheckboardGenerator, GGG) {
+    cv::Mat const checkboard_image{GenerateCheckboard(2, 4, 50)};
+
+    EXPECT_FALSE(false);
+}
