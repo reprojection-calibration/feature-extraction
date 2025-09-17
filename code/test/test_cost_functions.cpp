@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "optimization_architecture/cost_functions.hpp"
+#include "feature_extraction/cost_functions.hpp"
 
-using namespace reprojection_calibration::optimization_architecture;
+using namespace reprojection_calibration::feature_extraction;
 
 TEST(TestCostFunctions, OneParameterCostFunctionResidual) {
     double const parameter{10.0};
