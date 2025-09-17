@@ -1,4 +1,4 @@
-#include "checkboard_generator.hpp"
+#include "checkerboard_generator.hpp"
 
 namespace reprojection_calibration::feature_extraction {
 

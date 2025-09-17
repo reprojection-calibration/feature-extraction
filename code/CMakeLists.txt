@@ -13,7 +13,7 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(SRC_FILES
-        src/checkboard_generator.cpp
+        src/checkerboard_generator.cpp
         src/feature_extraction.cpp
 )
 add_library(${PROJECT_NAME} SHARED
@@ -43,7 +43,7 @@ set(TESTS
         src/checkboard_generator.test.cpp
         test/feature_extraction.test.cpp
 )
-foreach(TEST IN LISTS TESTS)
+foreach (TEST IN LISTS TESTS)
     get_filename_component(TEST_NAME ${TEST} NAME)
     add_executable(${TEST_NAME} ${TEST})
     target_link_libraries(${TEST_NAME}
@@ -51,4 +51,4 @@ foreach(TEST IN LISTS TESTS)
             ${PROJECT_NAME}
     )
     gtest_discover_tests(${TEST_NAME})
-endforeach()
+endforeach ()

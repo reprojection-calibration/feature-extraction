@@ -1,11 +1,16 @@
-#include "checkboard_generator.hpp"
-
 #include <gtest/gtest.h>
+
+#include "checkerboard_generator.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
 
-TEST(CheckboardGenerator, GGG) {
-    cv::Mat const checkboard_image{GenerateCheckboard(2, 4, 50)};
+TEST(CheckerboardGenerator, TestGenerateCheckboard) {
+    int const rows{2};
+    int const cols{4};
+    int const square_size{50};
+    cv::Mat const checkerboard_image{GenerateCheckboard(rows, cols, square_size)};
 
-    EXPECT_FALSE(false);
+    int const buffer{2 * square_size};
+    EXPECT_EQ(checkerboard_image.rows, buffer + (rows + 1) * square_size);
+    EXPECT_EQ(checkerboard_image.cols, buffer + (cols + 1) * square_size);
 }
