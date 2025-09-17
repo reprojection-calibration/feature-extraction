@@ -3,10 +3,6 @@
 namespace reprojection_calibration::feature_extraction {
 
 cv::Mat GenerateCheckboard(int const rows, int const cols, int const unit_pixel_dimension) {
-    (void)rows;
-    (void)cols;
-    (void)unit_pixel_dimension;
-
     // We have to add the one unit_pixel_dimension buffer around the entire checkboard area (i.e.
     // 2*unit_pixel_dimension).
     int const height{(unit_pixel_dimension * (rows + 1)) + (2 * unit_pixel_dimension)};
