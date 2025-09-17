@@ -16,6 +16,6 @@ TEST(FeatureExtraction, TestExtractCheckerboardFeatures) {
     Eigen::MatrixX2d const pixels{ExtractCheckerboardFeatures(image, cv::Point{rows, cols})};
 
     EXPECT_EQ(pixels.rows(), rows * cols);
-    // EXPECT_TRUE(pixels.row(0).isApprox(Eigen::MatrixX2d{250, 100}));   // First pixel - heuristic
-    // EXPECT_TRUE(pixels.row(11).isApprox(Eigen::MatrixX2d{100, 200}));  // Last pixel - heuristic
+    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{250, 100}.transpose(), 1e-6));  // First pixel - heuristic
+    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{100, 200}.transpose(), 1e-6));  // Last pixel - heuristic
 }

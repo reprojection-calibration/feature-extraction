@@ -23,6 +23,7 @@ Eigen::MatrixX2d ExtractCheckerboardFeatures(cv::Mat const& image, cv::Point con
         corners_matrix.row(i)[1] = corners[i].y;
     }
 
+    // TODO(Jack): Figure out what order these come in so we can align them with the 3D geometry
     return corners_matrix;
 }
 
