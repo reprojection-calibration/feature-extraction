@@ -40,7 +40,7 @@ enable_testing()
 include(GoogleTest)
 
 set(TESTS
-        src/checkboard_generator.test.cpp
+        src/checkerboard_generator.test.cpp
         test/feature_extraction.test.cpp
 )
 foreach (TEST IN LISTS TESTS)

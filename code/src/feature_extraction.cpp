@@ -2,9 +2,11 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-std::tuple<Eigen::MatrixX2d, Eigen::MatrixX3d> ExtractFeatures(cv::Mat const& image, TargetType const& target_type) {
+// TODO(Jack): Where are we getting the 3d information!?
+std::tuple<Eigen::MatrixX2d, Eigen::MatrixX3d> ExtractCheckerboardFeatures(cv::Mat const& image,
+                                                                           cv::Point const& checkerboard_dimension) {
     (void)image;
-    (void)target_type;
+    (void)checkerboard_dimension;
 
     // RETURN REAL VALUES
     return {Eigen::MatrixX2d{}, Eigen::MatrixX3d{}};

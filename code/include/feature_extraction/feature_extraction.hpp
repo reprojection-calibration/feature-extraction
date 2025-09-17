@@ -6,8 +6,7 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-enum class TargetType { AprilTag, Chessboard, CircleGrid };
-
-std::tuple<Eigen::MatrixX2d, Eigen::MatrixX3d> ExtractFeatures(cv::Mat const& image, TargetType const& target_type);
+std::tuple<Eigen::MatrixX2d, Eigen::MatrixX3d> ExtractCheckerboardFeatures(cv::Mat const& image,
+                                                                           cv::Point const& checkerboard_dimension);
 
 }  // namespace reprojection_calibration::feature_extraction
