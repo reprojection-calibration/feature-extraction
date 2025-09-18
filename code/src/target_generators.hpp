@@ -4,6 +4,6 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-cv::Mat GenerateCheckboard(int const rows, int const cols, int const unit_pixel_dimension);
+cv::Mat GenerateCheckerboard(int const rows, int const cols, int const unit_dimension_pixels);
 
 }  // namespace reprojection_calibration::feature_extraction

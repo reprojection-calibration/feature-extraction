@@ -13,8 +13,8 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(SRC_FILES
-        src/checkerboard_generator.cpp
-        src/feature_extraction.cpp
+        src/target_generators.cpp
+        src/checkerboard_extractor.cpp
 )
 add_library(${PROJECT_NAME} SHARED
         ${SRC_FILES}
@@ -40,7 +40,7 @@ enable_testing()
 include(GoogleTest)
 
 set(TESTS
-        src/checkerboard_generator.test.cpp
+        src/target_generators.test.cpp
         test/feature_extraction.test.cpp
 )
 foreach (TEST IN LISTS TESTS)
