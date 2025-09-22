@@ -25,3 +25,22 @@ TEST(CheckerboardExtractor, TestExtractCheckerboardFeatures) {
     EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));        // First point - heuristic
     EXPECT_TRUE(points.row(11).isApprox(Eigen::Vector3d{0.15, 0.1, 0}.transpose()));  // Last point - heuristic
 }
+
+TEST(CheckerboardExtractor, TestExtractCirclegridFeatures) {
+    int const rows{3};
+    int const cols{4};
+    int const circle_radius{25};
+    int const circle_spacing{20};  // Between circle edges
+    // TODO ALSO TEST ASYMMETRIC CASE
+    bool const asymmetric{false};
+    cv::Mat const image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
+
+    cv::Size const dimension{rows, cols};
+    auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension)};
+
+    std::cout << pixels << std::endl;
+
+    EXPECT_EQ(pixels.rows(), rows * cols);
+    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{55, 195}.transpose(), 1e-6));   // First pixel - heuristic
+    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{265, 55}.transpose(), 1e-6));  // Last pixel - heuristic
+}
