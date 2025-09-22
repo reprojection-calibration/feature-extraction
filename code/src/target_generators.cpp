@@ -43,7 +43,6 @@ cv::Mat GenerateCheckerboard(int const rows, int const cols, int const unit_dime
 // whereas the circle grid will works on rows and cols directly.
 cv::Mat GenerateCircleGrid(int const rows, int const cols, int const unit_dimension_pixels,
                            int const unit_spacing_pixels, bool const asymmetric) {
-    (void)unit_spacing_pixels;
     (void)asymmetric;
 
     // TODO ADD UNIT SPACING
@@ -67,5 +66,14 @@ cv::Mat GenerateCircleGrid(int const rows, int const cols, int const unit_dimens
 
     return circlgrid;
 }
+Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols) {
+    Eigen::ArrayXi const row_indices = Eigen::ArrayXi::LinSpaced(rows * cols, 0, rows - 1);
+    Eigen::ArrayXi const col_indices = Eigen::ArrayXi::LinSpaced(cols, 0, cols).colwise().replicate(rows);
 
+    Eigen::ArrayX2i grid_indices(rows * cols, 2);
+    grid_indices.col(0) = row_indices;
+    grid_indices.col(1) = col_indices;
+
+    return grid_indices;
+}
 }  // namespace reprojection_calibration::feature_extraction
