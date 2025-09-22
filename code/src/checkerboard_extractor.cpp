@@ -45,17 +45,19 @@ Eigen::MatrixX3d CheckerboardExtractorExtractPointFeatures(cv::Size const patter
 }
 
 // TODO(Jack): Should return optional based on "pattern_found"
-Eigen::MatrixX2d CirclegridExtractorExtractPixelFeatures(cv::Mat const& image, cv::Size const pattern_size) {
-    std::vector<cv::Point2f> corners;
-    bool const pattern_found{cv::findCirclesGrid(
-        image, pattern_size, corners,
-        cv::CALIB_CB_SYMMETRIC_GRID +
-            cv::CALIB_CB_CLUSTERING)};  // cv::CALIB_CB_CLUSTERING - "uses a special algorithm for grid detection. It is
-                                        // more robust to perspective distortions but much more sensitive to background
-                                        // clutter." - if I do not use this then I think I need to do some tuning about
-                                        // what acceptable sizes and spacing are for the circle grid. For now this will
-                                        // do.
+Eigen::MatrixX2d CirclegridExtractorExtractPixelFeatures(cv::Mat const& image, cv::Size const pattern_size,
+                                                         bool const asymmetric) {
+    // cv::CALIB_CB_CLUSTERING - "uses a special algorithm for grid detection. It is more robust to perspective
+    // distortions but much more sensitive to background clutter." - if I do not use this then I think I need to do some
+    // tuning about what acceptable sizes and spacing are for the circle grid. For now this will do.
+    // TODO(Jack): This is not so clean here because we will have to repeat all options (ex. cv::CALIB_CB_CLUSTERING)
+    // even though those will probably be the same for both cases. Keep your eyes peeled for associated problems!
+    int const extraction_options{asymmetric ? cv::CALIB_CB_CLUSTERING | cv::CALIB_CB_ASYMMETRIC_GRID
+                                            : cv::CALIB_CB_CLUSTERING | cv::CALIB_CB_SYMMETRIC_GRID};
 
+    std::vector<cv::Point2f> corners;
+    bool const pattern_found{cv::findCirclesGrid(image, pattern_size, corners, extraction_options)};
+    cv::drawChessboardCorners(image, pattern_size, cv::Mat(corners), pattern_found);
     static_cast<void>(pattern_found);  // REMOVE
 
     // TODO(Jack): Do we need this conversion function in some central location?

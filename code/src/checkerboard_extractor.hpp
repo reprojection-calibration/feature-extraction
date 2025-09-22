@@ -12,6 +12,7 @@ Eigen::MatrixX2d CheckerboardExtractorExtractPixelFeatures(cv::Mat const& image,
 Eigen::MatrixX3d CheckerboardExtractorExtractPointFeatures(cv::Size const pattern_size,
                                                            double const unit_dimension_meters_);
 
-Eigen::MatrixX2d CirclegridExtractorExtractPixelFeatures(cv::Mat const& image, cv::Size const pattern_size);
+Eigen::MatrixX2d CirclegridExtractorExtractPixelFeatures(cv::Mat const& image, cv::Size const pattern_size,
+                                                         bool const asymmetric);
 
 }  // namespace reprojection_calibration::feature_extraction

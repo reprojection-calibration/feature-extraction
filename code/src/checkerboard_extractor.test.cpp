@@ -31,14 +31,28 @@ TEST(CheckerboardExtractor, TestExtractCirclegridFeatures) {
     int const cols{4};
     int const circle_radius{25};
     int const circle_spacing{20};  // Between circle edges
-    // TODO ALSO TEST ASYMMETRIC CASE
     bool const asymmetric{false};
     cv::Mat const image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
 
     cv::Size const dimension{rows, cols};
-    auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension)};
+    auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension, asymmetric)};
 
-    std::cout << pixels << std::endl;
+    EXPECT_EQ(pixels.rows(), rows * cols);
+    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{55, 195}.transpose(), 1e-6));   // First pixel - heuristic
+    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{265, 55}.transpose(), 1e-6));  // Last pixel - heuristic
+}
+
+TEST(CheckerboardExtractor, TestExtractCirclegridFeaturesAsymmetric) {
+    // Refactor to use cv::Size
+    int const rows{6};
+    int const cols{10};
+    int const circle_radius{25};
+    int const circle_spacing{20};  // Between circle perimeter
+    bool const asymmetric{true};
+    cv::Mat const image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
+
+    cv::Size const dimension{rows, cols};
+    auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension, true)};
 
     EXPECT_EQ(pixels.rows(), rows * cols);
     EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{55, 195}.transpose(), 1e-6));   // First pixel - heuristic

@@ -37,11 +37,9 @@ cv::Mat GenerateCheckerboard(int const internal_rows, int const internal_cols, i
 // NOTE(Jack): The circles themselves are the features, not the intersection between the circles, therefore the indexing
 // logic will be different than by the checkerboard - i.e the checkboard always works in the rows+1 or cols+1 space,
 // whereas the circle grid will works on rows and cols directly.
-cv::Mat GenerateCircleGrid(int const rows, int const cols, int const unit_dimension_pixels,
-                           int const unit_spacing_pixels, bool const asymmetric) {
-    (void)asymmetric;
-
-    // TODO ADD UNIT SPACING
+cv::Mat GenerateCircleGrid(int rows, int cols, int const unit_dimension_pixels, int const unit_spacing_pixels,
+                           bool const asymmetric) {
+    // TODO ADD UNIT SPACING - what does this mean?
     int const circle_size{2 * unit_dimension_pixels};
     // circles + spacing + edge buffer
     int const height{(circle_size * rows) + (unit_spacing_pixels * (rows - 3)) + (2 * circle_size)};
@@ -51,6 +49,10 @@ cv::Mat GenerateCircleGrid(int const rows, int const cols, int const unit_dimens
     Eigen::ArrayX2i const grid{GenerateGridIndices(rows, cols)};
     for (Eigen::Index i{0}; i < grid.rows(); ++i) {
         Eigen::Array2i const indices{grid.row(i)};
+
+        if (asymmetric and indices.sum() % 2 != 0) {
+            continue;
+        }
 
         cv::Point const center{
             unit_dimension_pixels + circle_size + (unit_spacing_pixels * (indices(1) - 1)) + (circle_size * indices(1)),
