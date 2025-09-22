@@ -19,4 +19,7 @@ std::optional<Eigen::MatrixX2d> CirclegridExtractorExtractPixelFeatures(cv::Mat 
                                                                         cv::Size const pattern_size,
                                                                         bool const asymmetric);
 
+// TODO(Jack): Put in helper file if better organized there
+Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points);
+
 }  // namespace reprojection_calibration::feature_extraction

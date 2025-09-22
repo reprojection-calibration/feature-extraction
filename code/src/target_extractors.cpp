@@ -17,15 +17,7 @@ std::optional<Eigen::MatrixX2d> CheckerboardExtractorExtractPixelFeatures(cv::Ma
     cv::cornerSubPix(image, corners, cv::Size(11, 11), cv::Size(-1, -1),
                      cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
 
-    // TODO(Jack): Do we need this conversion function in some central location?
-    Eigen::MatrixX2d corners_matrix(std::size(corners), 2);
-    for (Eigen::Index i = 0; i < corners_matrix.rows(); i++) {
-        corners_matrix.row(i)[0] = corners[i].x;
-        corners_matrix.row(i)[1] = corners[i].y;
-    }
-
-    // TODO(Jack): Figure out what order these come in so we can align them with the 3D geometry
-    return corners_matrix;
+    return ToEigen(corners);
 }
 
 // NOTE(Jack): I think we can get the feature location simply by making a grid index array with the internal row/col
@@ -66,15 +58,17 @@ std::optional<Eigen::MatrixX2d> CirclegridExtractorExtractPixelFeatures(cv::Mat 
         return std::nullopt;
     }
 
-    // TODO(Jack): Do we need this conversion function in some central location?
-    Eigen::MatrixX2d corners_matrix(std::size(corners), 2);
-    for (Eigen::Index i = 0; i < corners_matrix.rows(); i++) {
-        corners_matrix.row(i)[0] = corners[i].x;
-        corners_matrix.row(i)[1] = corners[i].y;
+    return ToEigen(corners);
+}
+
+Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points) {
+    Eigen::MatrixX2d eigen_points(std::size(points), 2);
+    for (Eigen::Index i = 0; i < eigen_points.rows(); i++) {
+        eigen_points.row(i)[0] = points[i].x;
+        eigen_points.row(i)[1] = points[i].y;
     }
 
-    // TODO(Jack): Figure out what order these come in so we can align them with the 3D geometry
-    return corners_matrix;
+    return eigen_points;
 }
 
 }  // namespace reprojection_calibration::feature_extraction
