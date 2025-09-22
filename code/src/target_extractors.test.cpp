@@ -16,9 +16,10 @@ TEST(CheckerboardExtractor, TestExtractCheckerboardFeatures) {
     cv::Size const dimension{rows, cols};
     auto const pixels{CheckerboardExtractorExtractPixelFeatures(image, dimension)};
 
-    EXPECT_EQ(pixels.rows(), rows * cols);
-    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{250, 100}.transpose(), 1e-6));   // First pixel - heuristic
-    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{100, 200}.transpose(), 1e-6));  // Last pixel - heuristic
+    EXPECT_TRUE(pixels.has_value());
+    EXPECT_EQ(pixels->rows(), rows * cols);
+    EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{250, 100}.transpose(), 1e-6));   // First pixel - heuristic
+    EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{100, 200}.transpose(), 1e-6));  // Last pixel - heuristic
 
     double const unit_dimension_meters{0.05};
     auto const points{CheckerboardExtractorExtractPointFeatures(dimension, unit_dimension_meters)};
@@ -38,9 +39,9 @@ TEST(CheckerboardExtractor, TestExtractCirclegridFeatures) {
     cv::Size const dimension{rows, cols};
     auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension, asymmetric)};
 
-    EXPECT_EQ(pixels.rows(), rows * cols);
-    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{55, 195}.transpose(), 1e-6));   // First pixel - heuristic
-    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{265, 55}.transpose(), 1e-6));  // Last pixel - heuristic
+    EXPECT_EQ(pixels->rows(), rows * cols);
+    EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{55, 195}.transpose(), 1e-6));   // First pixel - heuristic
+    EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{265, 55}.transpose(), 1e-6));  // Last pixel - heuristic
 }
 
 TEST(CheckerboardExtractor, TestExtractCirclegridFeaturesAsymmetric) {
@@ -60,7 +61,8 @@ TEST(CheckerboardExtractor, TestExtractCirclegridFeaturesAsymmetric) {
     cv::Size const dimension{rows / 2, cols};
     auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension, true)};
 
-    EXPECT_EQ(pixels.rows(), (rows * cols) / 2);  // WARN(Jack): Divide by two due to asymmetry!
-    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));   // First pixel - heuristic
-    EXPECT_TRUE(pixels.row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));  // Last pixel - heuristic
+    EXPECT_TRUE(pixels.has_value());
+    EXPECT_EQ(pixels->rows(), (rows * cols) / 2);  // WARN(Jack): Divide by two due to asymmetry!
+    EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));   // First pixel - heuristic
+    EXPECT_TRUE(pixels->row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));  // Last pixel - heuristic
 }
