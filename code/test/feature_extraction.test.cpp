@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "feature_extraction/target_extractors.hpp"
+#include "feature_extraction/feature_extraction.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
 

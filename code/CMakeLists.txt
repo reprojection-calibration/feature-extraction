@@ -14,7 +14,7 @@ find_package(OpenCV REQUIRED)
 
 set(SRC_FILES
         src/target_generators.cpp
-        src/checkerboard_extractor.cpp
+        src/target_extractors.cpp
 )
 add_library(${PROJECT_NAME} SHARED
         ${SRC_FILES}
@@ -40,7 +40,7 @@ enable_testing()
 include(GoogleTest)
 
 set(TESTS
-        src/checkerboard_extractor.test.cpp
+        src/target_extractors.test.cpp
         src/target_generators.test.cpp
         test/feature_extraction.test.cpp
 )

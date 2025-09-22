@@ -1,8 +1,8 @@
-#include "checkerboard_extractor.hpp"
+#include "target_extractors.hpp"
 
 #include <gtest/gtest.h>
 
-#include "feature_extraction/target_extractors.hpp"
+#include "target_extractors.hpp"
 #include "target_generators.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
