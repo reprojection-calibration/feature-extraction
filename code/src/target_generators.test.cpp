@@ -18,14 +18,13 @@ TEST(TargetGenerators, TestGenerateCheckboard) {
 TEST(TargetGenerators, TestGenerateCircleGrid) {
     int const rows{3};
     int const cols{4};
-    int const circle_radius{25};  // NOTE THIS IS RADIUS!!!
-    // TODO MAKE NON ZERO!
-    int const circle_spacing{0};  // Between circle centers? Oder wat?
+    int const circle_radius{25};
+    int const circle_spacing{20};  // Between circle edges
     // TODO MAKE TRUE
     bool const asymmetric{false};
     cv::Mat const circlegrid_image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
 
-    int const border{2 * circle_radius};
-    EXPECT_EQ(circlegrid_image.rows, border + (rows + 1) * 2 * circle_radius);  // What about circle_spacing
-    EXPECT_EQ(circlegrid_image.cols, border + (cols + 1) * 2 * circle_radius);  // What about circle_spacing
+    // ERROR(Jack): Calculate these values, do not hardcode them!!!
+    EXPECT_EQ(circlegrid_image.rows, 250);  // What about circle_spacing
+    EXPECT_EQ(circlegrid_image.cols, 320);  // What about circle_spacing
 }

@@ -49,20 +49,23 @@ cv::Mat GenerateCircleGrid(int const rows, int const cols, int const unit_dimens
     // TODO ADD UNIT SPACING
     int const circle_size{2 * unit_dimension_pixels};
     // circles + spacing + edge buffer
-    int const height{(circle_size * rows) + (2 * circle_size)};
-    int const width{(circle_size * cols) + (2 * circle_size)};
+    int const height{(circle_size * rows) + (unit_spacing_pixels * (rows - 3)) + (2 * circle_size)};
+    int const width{(circle_size * cols) + (unit_spacing_pixels * (cols - 3)) + (2 * circle_size)};
     cv::Mat circlgrid{255 * cv::Mat::ones(height, width, CV_8UC1)};
 
-    // NOTE(Jack): Both the checkboard and circle grid should use the same core asymmetric logic
+    // NOTE(Jack): Both the checkboard and circle grid should use the same core asymmetric logic if possible
     for (int row = 0; row < rows; row++) {
         for (int col = 0; col < cols; col++) {
-            cv::Point const center{unit_dimension_pixels + circle_size + (circle_size * col),
-                                   unit_dimension_pixels + circle_size + (circle_size * row)};
+            // NOTE(Jack): We need the unit dimension pixels because the circle is reference by its center point, unlike
+            // the rectangle which is referenced from its top left corner.
+            cv::Point const center{
+                unit_dimension_pixels + circle_size + (unit_spacing_pixels * (col - 1)) + (circle_size * col),
+                unit_dimension_pixels + circle_size + (unit_spacing_pixels * (row - 1)) + (circle_size * row)};
             cv::circle(circlgrid, center, unit_dimension_pixels, (0), -1);
         }
     }
 
-    return cv::Mat();
+    return circlgrid;
 }
 
 }  // namespace reprojection_calibration::feature_extraction
