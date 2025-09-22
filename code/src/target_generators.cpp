@@ -1,5 +1,7 @@
 #include "target_generators.hpp"
 
+#include <iostream>
+
 namespace reprojection_calibration::feature_extraction {
 
 // TODO(Jack): Consider using cv:Size instead of rows and cols.
@@ -10,27 +12,18 @@ cv::Mat GenerateCheckerboard(int const rows, int const cols, int const unit_dime
     int const width{(unit_dimension_pixels * (cols + 1)) + (2 * unit_dimension_pixels)};
     cv::Mat checkerboard{255 * cv::Mat::ones(height, width, CV_8UC1)};  // Start with white image
 
-    // TODO(Jack): Clean up this copy and pasted madness to draw the checkboard with alternating rows and columns!
-    for (int row = 0; row < rows + 1; row++) {
-        for (int col = 0; col < cols + 1; col++) {
-            if (row % 2 == 0) {
-                if (col % 2 == 0) {
-                    cv::Point const top_left_corner{unit_dimension_pixels + (unit_dimension_pixels * col),
-                                                    unit_dimension_pixels + (unit_dimension_pixels * row)};
-                    cv::Point const bottom_right_corner{top_left_corner.x + unit_dimension_pixels,
-                                                        top_left_corner.y + unit_dimension_pixels};
-                    cv::rectangle(checkerboard, top_left_corner, bottom_right_corner, (0), -1);
-                }
+    Eigen::ArrayX2i const grid{GenerateGridIndices(rows + 1, cols + 1)};
+    for (Eigen::Index i{0}; i < grid.rows(); ++i) {
+        Eigen::Array2i const indices{grid.row(i)};
 
-            } else {
-                if (col % 2 != 0) {
-                    cv::Point const top_left_corner{unit_dimension_pixels + (unit_dimension_pixels * col),
-                                                    unit_dimension_pixels + (unit_dimension_pixels * row)};
-                    cv::Point const bottom_right_corner{top_left_corner.x + unit_dimension_pixels,
-                                                        top_left_corner.y + unit_dimension_pixels};
-                    cv::rectangle(checkerboard, top_left_corner, bottom_right_corner, (0), -1);
-                }
-            }
+        // This condition gives us an asymmetric grid - like that of  checkerboard/chessboard
+        if (indices.sum() % 2 == 0) {
+            cv::Point const top_left_corner{unit_dimension_pixels + (unit_dimension_pixels * indices(1)),
+                                            unit_dimension_pixels + (unit_dimension_pixels * indices(0))};
+            cv::Point const bottom_right_corner{top_left_corner.x + unit_dimension_pixels,
+                                                top_left_corner.y + unit_dimension_pixels};
+
+            cv::rectangle(checkerboard, top_left_corner, bottom_right_corner, (0), -1);
         }
     }
 
@@ -66,6 +59,7 @@ cv::Mat GenerateCircleGrid(int const rows, int const cols, int const unit_dimens
 
     return circlgrid;
 }
+
 Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols) {
     Eigen::ArrayXi const row_indices = Eigen::ArrayXi::LinSpaced(rows * cols, 0, rows - 1);
     Eigen::ArrayXi const col_indices = Eigen::ArrayXi::LinSpaced(cols, 0, cols).colwise().replicate(rows);
