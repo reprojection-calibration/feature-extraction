@@ -13,7 +13,8 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(SRC_FILES
-        src/feature_extraction.cpp
+        src/target_generators.cpp
+        src/checkerboard_extractor.cpp
 )
 add_library(${PROJECT_NAME} SHARED
         ${SRC_FILES}
@@ -39,9 +40,11 @@ enable_testing()
 include(GoogleTest)
 
 set(TESTS
+        src/checkerboard_extractor.test.cpp
+        src/target_generators.test.cpp
         test/feature_extraction.test.cpp
 )
-foreach(TEST IN LISTS TESTS)
+foreach (TEST IN LISTS TESTS)
     get_filename_component(TEST_NAME ${TEST} NAME)
     add_executable(${TEST_NAME} ${TEST})
     target_link_libraries(${TEST_NAME}
@@ -49,4 +52,4 @@ foreach(TEST IN LISTS TESTS)
             ${PROJECT_NAME}
     )
     gtest_discover_tests(${TEST_NAME})
-endforeach()
+endforeach ()
