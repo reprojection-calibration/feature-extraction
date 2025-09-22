@@ -5,7 +5,7 @@
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetGenerators, TestGenerateCheckboard) {
-    int const internal_rows{3}; // "internal" refers to the fact that the features are made at the intersections
+    int const internal_rows{3};  // "internal" refers to the fact that the features are made at the intersections
     int const internal_cols{4};
     int const square_size{50};
     cv::Mat const checkerboard_image{GenerateCheckerboard(internal_rows, internal_cols, square_size)};
@@ -20,7 +20,7 @@ TEST(TargetGenerators, TestGenerateCircleGrid) {
     int const cols{4};
     int const circle_radius{25};
     int const circle_spacing{20};  // Between circle edges
-    // TODO MAKE TRUE
+    // TODO ALSO TEST ASYMMETRIC CASE
     bool const asymmetric{false};
     cv::Mat const circlegrid_image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
 
