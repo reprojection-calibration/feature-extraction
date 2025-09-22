@@ -5,6 +5,8 @@
 
 namespace reprojection_calibration::feature_extraction {
 
+// TODO(Jack): Are we doing to make the same design choice of having the "target" concept permeate the entire repo?
+// Maybe that actually makes sense?
 struct ExtractedTarget {
     Eigen::MatrixX2d pixels;
     Eigen::MatrixX3d points;

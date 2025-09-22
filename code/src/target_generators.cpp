@@ -37,4 +37,15 @@ cv::Mat GenerateCheckerboard(int const rows, int const cols, int const unit_dime
     return checkerboard;
 }
 
+cv::Mat GenerateCircleGrid(int const rows, int const cols, int const unit_dimension_pixels, double const unit_spacing,
+                           bool const asymmetric) {
+    (void)rows;
+    (void)cols;
+    (void)unit_dimension_pixels;
+    (void)unit_spacing;
+    (void)asymmetric;
+
+    return cv::Mat();
+}
+
 }  // namespace reprojection_calibration::feature_extraction
