@@ -5,7 +5,7 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-cv::Mat GenerateCheckerboard(int const rows, int const cols, int const unit_dimension_pixels);
+cv::Mat GenerateCheckerboard(int const internal_rows, int const internal_cols, int const unit_dimension_pixels);
 
 // unit_spacing: Given as a fraction of unit_dimension_pixels!!!
 cv::Mat GenerateCircleGrid(int const rows, int const cols, int const unit_dimension_pixels,

@@ -5,14 +5,14 @@
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetGenerators, TestGenerateCheckboard) {
-    int const rows{3};
-    int const cols{4};
+    int const internal_rows{3}; // "internal" refers to the fact that the features are made at the intersections
+    int const internal_cols{4};
     int const square_size{50};
-    cv::Mat const checkerboard_image{GenerateCheckerboard(rows, cols, square_size)};
+    cv::Mat const checkerboard_image{GenerateCheckerboard(internal_rows, internal_cols, square_size)};
 
     int const border{2 * square_size};
-    EXPECT_EQ(checkerboard_image.rows, border + (rows + 1) * square_size);
-    EXPECT_EQ(checkerboard_image.cols, border + (cols + 1) * square_size);
+    EXPECT_EQ(checkerboard_image.rows, border + (internal_rows + 1) * square_size);
+    EXPECT_EQ(checkerboard_image.cols, border + (internal_cols + 1) * square_size);
 }
 
 TEST(TargetGenerators, TestGenerateCircleGrid) {
