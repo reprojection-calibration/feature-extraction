@@ -2,6 +2,7 @@
 
 namespace reprojection_calibration::feature_extraction {
 
+// TODO(Jack): Consider using cv:Size instead of rows and cols.
 cv::Mat GenerateCheckerboard(int const rows, int const cols, int const unit_dimension_pixels) {
     // We have to add the one unit_dimension_pixels buffer around the entire checkboard area (i.e.
     // 2*unit_dimension_pixels).

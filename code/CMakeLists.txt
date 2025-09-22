@@ -40,6 +40,7 @@ enable_testing()
 include(GoogleTest)
 
 set(TESTS
+        src/checkerboard_extractor.test.cpp
         src/target_generators.test.cpp
         test/feature_extraction.test.cpp
 )

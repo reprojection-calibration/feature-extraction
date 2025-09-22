@@ -1,15 +1,8 @@
-#include "feature_extraction/target_extractors.hpp"
+#include "checkerboard_extractor.hpp"
 
 namespace reprojection_calibration::feature_extraction {
 
-CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, double const unit_dimension_meters)
-    : pattern_size_{pattern_size}, unit_dimension_meters_{unit_dimension_meters} {}
-
-std::tuple<Eigen::MatrixX2d, Eigen::MatrixX3d> CheckerboardExtractor::ExtractTarget(cv::Mat const& image) const {
-    return {ExtractPixelFeatures(image), ExtractPointFeatures()};
-}
-
-Eigen::MatrixX2d CheckerboardExtractor::ExtractPixelFeatures(cv::Mat const& image) const {
+Eigen::MatrixX2d CheckerboardExtractorExtractPixelFeatures(cv::Mat const& image, cv::Size const pattern_size_) {
     std::vector<cv::Point2f> corners;
 
     bool const pattern_found{cv::findChessboardCorners(
@@ -33,9 +26,21 @@ Eigen::MatrixX2d CheckerboardExtractor::ExtractPixelFeatures(cv::Mat const& imag
     return corners_matrix;
 }
 
-Eigen::MatrixX3d CheckerboardExtractor::ExtractPointFeatures() const {
-    // RETURN REAL VALUES
-    return Eigen::Matrix3d::Identity();
+Eigen::MatrixX3d CheckerboardExtractorExtractPointFeatures(cv::Size const pattern_size_,
+                                                           double const unit_dimension_meters_) {
+    // TODO(Jack): There has to be a much more eloquent and clear way to create this with eigen linear space operations
+    Eigen::MatrixX3d corner_locations(pattern_size_.height * pattern_size_.width, 3);
+
+    double const z{0};
+    for (int row{0}; row < pattern_size_.height; row++) {
+        for (int col{0}; col < pattern_size_.width; col++) {
+            double const x{row * unit_dimension_meters_};
+            double const y{col * unit_dimension_meters_};
+            corner_locations.row((row * pattern_size_.width) + col) = Eigen::Vector3d{x, y, z};
+        }
+    }
+
+    return corner_locations;
 }
 
 }  // namespace reprojection_calibration::feature_extraction
