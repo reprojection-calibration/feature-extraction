@@ -8,18 +8,16 @@
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(CheckerboardExtractor, TestExtractCheckerboardFeatures) {
-    int const rows{3};
-    int const cols{4};
+    cv::Size const pattern_size{4, 3};  // (width, height) == (cols, rows)
     int const unit_dimension_pixels{50};
-    cv::Mat const image{GenerateCheckerboard(rows, cols, unit_dimension_pixels)};
+    cv::Mat const image{GenerateCheckerboard(pattern_size, unit_dimension_pixels)};
 
-    cv::Size const dimension{rows, cols};
-    auto const pixels{CheckerboardExtractorExtractPixelFeatures(image, dimension)};
+    std::optional<Eigen::MatrixX2d> const pixels{CheckerboardExtractorExtractPixelFeatures(image, pattern_size)};
 
     EXPECT_TRUE(pixels.has_value());
-    EXPECT_EQ(pixels->rows(), rows * cols);
-    EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{250, 100}.transpose(), 1e-6));   // First pixel - heuristic
-    EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{100, 200}.transpose(), 1e-6));  // Last pixel - heuristic
+    EXPECT_EQ(pixels->rows(), pattern_size.height * pattern_size.width);
+    EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{100, 100}.transpose(), 1e-6));   // First pixel - heuristic
+    EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{250, 200}.transpose(), 1e-6));  // Last pixel - heuristic
 }
 
 TEST(CheckerboardExtractor, TestExtractCirclegridFeatures) {

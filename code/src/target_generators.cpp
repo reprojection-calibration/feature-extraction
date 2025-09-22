@@ -1,15 +1,13 @@
 #include "target_generators.hpp"
 
-#include <iostream>
-
 namespace reprojection_calibration::feature_extraction {
 
 // TODO(Jack): Consider using cv:Size instead of rows and cols.
-cv::Mat GenerateCheckerboard(int const internal_rows, int const internal_cols, int const unit_dimension_pixels) {
+cv::Mat GenerateCheckerboard(cv::Size const& pattern_size, int const unit_dimension_pixels) {
     // TODO(Jack): Which concept should the user be familiar with, the "internal rows/cols" or the checkerboards
     // rows/cols themselves
-    int const rows{internal_rows + 1};
-    int const cols{internal_cols + 1};
+    int const rows{pattern_size.height + 1};
+    int const cols{pattern_size.width + 1};
 
     int const buffer{2 * unit_dimension_pixels};  // White buffer space around checkerboard aids extraction
     int const height{(unit_dimension_pixels * rows) + buffer};
