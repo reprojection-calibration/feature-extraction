@@ -40,8 +40,10 @@ cv::Mat GenerateCircleGrid(cv::Size const& pattern_size, int const unit_dimensio
     // TODO ADD UNIT SPACING - what does this mean?
     int const circle_size{2 * unit_dimension_pixels};
     // circles + spacing + edge buffer
-    int const height{(circle_size * pattern_size.height) + (unit_spacing_pixels * (pattern_size.height - 3)) + (2 * circle_size)};
-    int const width{(circle_size * pattern_size.width) + (unit_spacing_pixels * (pattern_size.width - 3)) + (2 * circle_size)};
+    int const height{(circle_size * pattern_size.height) + (unit_spacing_pixels * (pattern_size.height - 3)) +
+                     (2 * circle_size)};
+    int const width{(circle_size * pattern_size.width) + (unit_spacing_pixels * (pattern_size.width - 3)) +
+                    (2 * circle_size)};
     cv::Mat circlgrid{255 * cv::Mat::ones(height, width, CV_8UC1)};
 
     Eigen::ArrayX2i const grid{GenerateGridIndices(pattern_size.height, pattern_size.width)};
