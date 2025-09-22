@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <Eigen/Dense>
-
 #include "target_generators.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
@@ -36,8 +34,6 @@ TEST(TestGenerators, TestGenerateGridIndices) {
     int const cols{4};
 
     Eigen::ArrayX2i const grid_indices{GenerateGridIndices(rows, cols)};
-
-    std::cout << grid_indices << std::endl;
 
     EXPECT_EQ(grid_indices.rows(), rows * cols);
     // Heuristically check the first grid row that it is ((0,0), (0,1), (0,2), (0,3))
