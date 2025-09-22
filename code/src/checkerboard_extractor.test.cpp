@@ -44,14 +44,19 @@ TEST(CheckerboardExtractor, TestExtractCirclegridFeatures) {
 
 TEST(CheckerboardExtractor, TestExtractCirclegridFeaturesAsymmetric) {
     // Refactor to use cv::Size
+    // WARN(Jack): Must be even (rows)! See comment below.
+    // WARN(Jack): Must be an odd number (cols) to prevent 180 degree rotation symmetry!
+    // https://answers.opencv.org/question/96561/calibration-with-findcirclesgrid-trouble-with-pattern-widthheight/
     int const rows{6};
-    int const cols{10};
+    int const cols{7};
     int const circle_radius{25};
-    int const circle_spacing{20};  // Between circle perimeter
+    int const circle_spacing{20};
     bool const asymmetric{true};
     cv::Mat const image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
 
-    cv::Size const dimension{rows, cols};
+    // WARN(Jack): Violation of principle of least surprise! They count every column but only half the rows (i.e. the
+    // ones sticking out on the left side)
+    cv::Size const dimension{rows / 2, cols};
     auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension, true)};
 
     EXPECT_EQ(pixels.rows(), rows * cols);
