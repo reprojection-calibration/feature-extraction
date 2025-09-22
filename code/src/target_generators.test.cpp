@@ -15,12 +15,11 @@ TEST(TargetGenerators, TestGenerateCheckboard) {
 }
 
 TEST(TargetGenerators, TestGenerateCircleGrid) {
-    int const rows{3};
-    int const cols{4};
+    cv::Size const pattern_size{4, 3};  // (width, height) == (cols, rows)
     int const circle_radius{25};
     int const circle_spacing{20};  // Between circle edges
     bool const asymmetric{false};
-    cv::Mat const circlegrid_image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
+    cv::Mat const circlegrid_image{GenerateCircleGrid(pattern_size, circle_radius, circle_spacing, asymmetric)};
 
     // ERROR(Jack): Calculate these values, do not hardcode them!!!
     EXPECT_EQ(circlegrid_image.rows, 250);  // What about circle_spacing
@@ -28,12 +27,11 @@ TEST(TargetGenerators, TestGenerateCircleGrid) {
 }
 
 TEST(TargetGenerators, TestGenerateCircleGridAsymmetric) {
-    int const rows{3};
-    int const cols{4};
+    cv::Size const pattern_size{4, 3};  // (width, height) == (cols, rows)
     int const circle_radius{25};
     int const circle_spacing{20};  // Between circle edges
     bool const asymmetric{true};
-    cv::Mat const circlegrid_image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
+    cv::Mat const circlegrid_image{GenerateCircleGrid(pattern_size, circle_radius, circle_spacing, asymmetric)};
 
     // ERROR(Jack): Calculate these values, do not hardcode them!!!
     EXPECT_EQ(circlegrid_image.rows, 250);  // What about circle_spacing

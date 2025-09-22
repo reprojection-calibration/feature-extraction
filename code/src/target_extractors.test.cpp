@@ -21,19 +21,17 @@ TEST(CheckerboardExtractor, TestExtractCheckerboardFeatures) {
 }
 
 TEST(CheckerboardExtractor, TestExtractCirclegridFeatures) {
-    int const rows{3};
-    int const cols{4};
+    cv::Size const pattern_size{4, 3};  // (width, height) == (cols, rows)
     int const circle_radius{25};
     int const circle_spacing{20};  // Between circle edges
     bool const asymmetric{false};
-    cv::Mat const image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
+    cv::Mat const image{GenerateCircleGrid(pattern_size, circle_radius, circle_spacing, asymmetric)};
 
-    cv::Size const dimension{rows, cols};
-    auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension, asymmetric)};
+    auto const pixels{CirclegridExtractorExtractPixelFeatures(image, pattern_size, asymmetric)};
 
-    EXPECT_EQ(pixels->rows(), rows * cols);
-    EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{55, 195}.transpose(), 1e-6));   // First pixel - heuristic
-    EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{265, 55}.transpose(), 1e-6));  // Last pixel - heuristic
+    EXPECT_EQ(pixels->rows(), pattern_size.width * pattern_size.height);
+    EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{265, 195}.transpose(), 1e-6));  // First pixel - heuristic
+    EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{55, 55}.transpose(), 1e-6));   // Last pixel - heuristic
 }
 
 TEST(CheckerboardExtractor, TestExtractCirclegridFeaturesAsymmetric) {
@@ -41,20 +39,20 @@ TEST(CheckerboardExtractor, TestExtractCirclegridFeaturesAsymmetric) {
     // WARN(Jack): Must be even (rows)! See comment below.
     // WARN(Jack): Must be an odd number (cols) to prevent 180 degree rotation symmetry!
     // https://answers.opencv.org/question/96561/calibration-with-findcirclesgrid-trouble-with-pattern-widthheight/
-    int const rows{6};
-    int const cols{7};
+    cv::Size const pattern_size{7, 6};  // (width, height) == (cols, rows)
     int const circle_radius{25};
     int const circle_spacing{20};
     bool const asymmetric{true};
-    cv::Mat const image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
+    cv::Mat const image{GenerateCircleGrid(pattern_size, circle_radius, circle_spacing, asymmetric)};
 
     // WARN(Jack): Violation of principle of least surprise! They count every column but only half the rows (i.e. the
     // ones sticking out on the left side)
-    cv::Size const dimension{rows / 2, cols};
+    cv::Size const dimension{pattern_size.height / 2, pattern_size.width};
     auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension, true)};
 
     EXPECT_TRUE(pixels.has_value());
-    EXPECT_EQ(pixels->rows(), (rows * cols) / 2);  // WARN(Jack): Divide by two due to asymmetry!
+    EXPECT_EQ(pixels->rows(),
+              (pattern_size.width * pattern_size.height) / 2);  // NOTE(Jack): Divide by two due to asymmetry!
     EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));   // First pixel - heuristic
     EXPECT_TRUE(pixels->row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));  // Last pixel - heuristic
 }
