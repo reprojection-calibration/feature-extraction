@@ -20,25 +20,6 @@ std::optional<Eigen::MatrixX2d> CheckerboardExtractorExtractPixelFeatures(cv::Ma
     return ToEigen(corners);
 }
 
-// NOTE(Jack): I think we can get the feature location simply by making a grid index array with the internal row/col
-// size multiplied by the dimensions.
-Eigen::MatrixX3d CheckerboardExtractorExtractPointFeatures(cv::Size const pattern_size,
-                                                           double const unit_dimension_meters_) {
-    // TODO(Jack): There has to be a much more eloquent and clear way to create this with eigen linear space operations
-    Eigen::MatrixX3d corner_locations(pattern_size.height * pattern_size.width, 3);
-
-    double const z{0};
-    for (int row{0}; row < pattern_size.height; row++) {
-        for (int col{0}; col < pattern_size.width; col++) {
-            double const x{row * unit_dimension_meters_};
-            double const y{col * unit_dimension_meters_};
-            corner_locations.row((row * pattern_size.width) + col) = Eigen::Vector3d{x, y, z};
-        }
-    }
-
-    return corner_locations;
-}
-
 // TODO(Jack): Should return optional based on "pattern_found"
 std::optional<Eigen::MatrixX2d> CirclegridExtractorExtractPixelFeatures(cv::Mat const& image,
                                                                         cv::Size const pattern_size,
