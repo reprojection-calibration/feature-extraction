@@ -1,6 +1,7 @@
+#include "checkerboard_extractor.hpp"
+
 #include <gtest/gtest.h>
 
-#include "checkerboard_extractor.hpp"
 #include "feature_extraction/target_extractors.hpp"
 #include "target_generators.hpp"
 
