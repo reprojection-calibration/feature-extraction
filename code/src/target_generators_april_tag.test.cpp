@@ -7,6 +7,12 @@
 
 using namespace reprojection_calibration::feature_extraction;
 
+Eigen::MatrixXi Rotate90(Eigen::MatrixXi const& matrix, bool const clockwise = false) {
+    Eigen::MatrixXi const matrix_star{matrix.transpose()};
+
+    return clockwise ? matrix_star.rowwise().reverse().eval() : matrix_star.colwise().reverse().eval();
+}
+
 // TODO(Jack): Consider typedef for unsigned long long type used everywhere
 Eigen::MatrixXi GenerateCodeMatrix(int const bit_count, unsigned long long const tag_code) {
     int const sqrt_bit_count{static_cast<int>(std::sqrt(bit_count))};
@@ -18,9 +24,8 @@ Eigen::MatrixXi GenerateCodeMatrix(int const bit_count, unsigned long long const
             code_matrix(i, j) = not bit_sign;
         }
     }
-    std::cout << code_matrix << std::endl;
 
-    return Eigen::MatrixXi();
+    return Rotate90(Rotate90(code_matrix));
 }
 
 TEST(TargetGeneratorsAprilTag, XXX) {
