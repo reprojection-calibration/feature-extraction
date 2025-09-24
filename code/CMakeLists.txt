@@ -41,6 +41,7 @@ include(GoogleTest)
 
 set(TESTS
         src/target_extractors.test.cpp
+        src/target_generators_april_tag.test.cpp
         src/target_generators.test.cpp
         test/feature_extraction.test.cpp
 )
