@@ -28,7 +28,10 @@ Eigen::MatrixXi GenerateCodeMatrix(int const bit_count, unsigned long long const
     return Rotate90(Rotate90(code_matrix));
 }
 
-TEST(TargetGeneratorsAprilTag, XXX) {
-    GenerateCodeMatrix(36, april_tag::t36h11[0]);
-    EXPECT_TRUE(false);
+TEST(TargetGeneratorsAprilTag, TestGenerateCodeMatrix) {
+    Eigen::MatrixXi const encoding{GenerateCodeMatrix(36, april_tag::t36h11[0])};
+
+    // Check two properties of the matrix and hope if anything in the implementation breaks these catch it -_-
+    EXPECT_EQ(encoding.sum(), 20);                                                               // Heuristic
+    EXPECT_TRUE(encoding.row(5).isApprox(Eigen::Vector<int, 6>{1, 1, 1, 0, 1, 1}.transpose()));  // Heuristic
 }
