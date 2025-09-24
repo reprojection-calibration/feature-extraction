@@ -8,6 +8,8 @@ namespace reprojection_calibration::feature_extraction {
 // be considered for all target types potentially!
 // ERROR(Jack): We need to define a type that contains the tag family and its code, plus the number of bits. That
 // information is currently hardcoded!
+// WARN(Jack): Our aprilboard orientation is completely different than the Kalibr one! In kalibr tag zero is in the
+// bottom right corner of the generated pdf.
 cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickness_bits, int const tag_spacing_bits,
                            int const bit_size_pixels, unsigned long long const tag_family[]) {
     int const vertical_spacers{pattern_size.height + 1};
@@ -47,7 +49,7 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickn
                                             top_left_corner.y + april_tag_size_pixels};
         cv::Rect const roi{cv::Rect(top_left_corner, bottom_right_corner)};
 
-        // Row major indexing - clean up logic!
+        // Row major indexing - clean up logic, maybe we need a helper that convert the 2d indices back to a 1d index.
         Eigen::MatrixXi const code_i{
             CalculateCodeMatrix(bit_count, tag_family[(indices(0) * pattern_size.width) + indices(1)])};
         cv::Mat const april_tag_i{GenerateAprilTag(code_i, border_thickness_bits, bit_size_pixels)};
