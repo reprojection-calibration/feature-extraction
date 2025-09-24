@@ -76,4 +76,5 @@ Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols) {
 
     return grid_indices;
 }
+
 }  // namespace reprojection_calibration::feature_extraction
