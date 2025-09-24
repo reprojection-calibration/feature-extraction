@@ -5,20 +5,9 @@
 #include <opencv2/opencv.hpp>
 
 #include "april_tag_family_36h11.hpp"
+#include "grid_utilities.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
-
-// DO NOT COPY AND PASTE!!!!
-Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols) {
-    Eigen::ArrayXi const row_indices = Eigen::ArrayXi::LinSpaced(rows * cols, 0, rows - 1);
-    Eigen::ArrayXi const col_indices = Eigen::ArrayXi::LinSpaced(cols, 0, cols).colwise().replicate(rows);
-
-    Eigen::ArrayX2i grid_indices(rows * cols, 2);
-    grid_indices.col(0) = row_indices;
-    grid_indices.col(1) = col_indices;
-
-    return grid_indices;
-}
 
 Eigen::MatrixXi Rotate90(Eigen::MatrixXi const& matrix, bool const clockwise = false) {
     Eigen::MatrixXi const matrix_star{matrix.transpose()};

@@ -10,6 +10,4 @@ cv::Mat GenerateCheckerboard(cv::Size const& pattern_size, int const square_size
 cv::Mat GenerateCircleGrid(cv::Size const& pattern_size, int const circle_radius_pixels,
                            int const circle_spacing_pixels, bool const asymmetric);
 
-Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols);
-
 }  // namespace reprojection_calibration::feature_extraction
