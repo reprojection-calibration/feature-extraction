@@ -14,6 +14,7 @@ find_package(OpenCV REQUIRED)
 
 set(SRC_FILES
         src/grid_utilities.cpp
+        src/target_generators_april_tag.cpp
         src/target_generators.cpp
         src/target_extractors.cpp
 )
