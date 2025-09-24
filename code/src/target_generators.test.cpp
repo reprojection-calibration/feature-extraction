@@ -5,40 +5,40 @@
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetGenerators, TestGenerateCheckboard) {
-    int const internal_rows{3};  // "internal" refers to the fact that the features are made at the intersections
-    int const internal_cols{4};
-    int const square_size{50};
-    cv::Mat const checkerboard_image{GenerateCheckerboard(internal_rows, internal_cols, square_size)};
+    cv::Size const pattern_size{4, 3};  // (width, height) == (cols, rows)
+    int const square_size_pixels{50};
+    cv::Mat const checkerboard_image{GenerateCheckerboard(pattern_size, square_size_pixels)};
 
-    int const border{2 * square_size};
-    EXPECT_EQ(checkerboard_image.rows, border + (internal_rows + 1) * square_size);
-    EXPECT_EQ(checkerboard_image.cols, border + (internal_cols + 1) * square_size);
+    int const white_space_border{2 * square_size_pixels};
+    EXPECT_EQ(checkerboard_image.rows, white_space_border + (pattern_size.height + 1) * square_size_pixels);
+    EXPECT_EQ(checkerboard_image.cols, white_space_border + (pattern_size.width + 1) * square_size_pixels);
 }
 
 TEST(TargetGenerators, TestGenerateCircleGrid) {
-    int const rows{3};
-    int const cols{4};
-    int const circle_radius{25};
-    int const circle_spacing{20};  // Between circle edges
+    cv::Size const pattern_size{4, 3};
+    int const circle_radius_pixels{25};
+    int const circle_spacing_pixels{20};  // Distance between circle rims - that means the straight line distance
+                                          // between two circles in one row or columns will be (2*radius + spacing)
     bool const asymmetric{false};
-    cv::Mat const circlegrid_image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
+    cv::Mat const circlegrid_image{
+        GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
     // ERROR(Jack): Calculate these values, do not hardcode them!!!
-    EXPECT_EQ(circlegrid_image.rows, 250);  // What about circle_spacing
-    EXPECT_EQ(circlegrid_image.cols, 320);  // What about circle_spacing
+    EXPECT_EQ(circlegrid_image.rows, 250);
+    EXPECT_EQ(circlegrid_image.cols, 320);
 }
 
 TEST(TargetGenerators, TestGenerateCircleGridAsymmetric) {
-    int const rows{3};
-    int const cols{4};
-    int const circle_radius{25};
-    int const circle_spacing{20};  // Between circle edges
+    cv::Size const pattern_size{4, 3};
+    int const circle_radius_pixels{25};
+    int const circle_spacing_pixels{20};  // Between circle edges
     bool const asymmetric{true};
-    cv::Mat const circlegrid_image{GenerateCircleGrid(rows, cols, circle_radius, circle_spacing, asymmetric)};
+    cv::Mat const circlegrid_image{
+        GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
     // ERROR(Jack): Calculate these values, do not hardcode them!!!
-    EXPECT_EQ(circlegrid_image.rows, 250);  // What about circle_spacing
-    EXPECT_EQ(circlegrid_image.cols, 320);  // What about circle_spacing
+    EXPECT_EQ(circlegrid_image.rows, 250);
+    EXPECT_EQ(circlegrid_image.cols, 320);
 }
 
 TEST(TestGenerators, TestGenerateGridIndices) {
