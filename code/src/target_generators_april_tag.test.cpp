@@ -74,7 +74,6 @@ cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const border_th
 // information is currently hardcoded!
 cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickness_bits, int const tag_spacing_bits,
                            int const bit_size_pixels, unsigned long long const tag_family[]) {
-    (void)tag_family;
     int const vertical_spacers{pattern_size.height + 1};
     int const horizontal_spacers{pattern_size.width + 1};
     int const bit_count{36};  // ERROR DO NOT HARDCODE ERROR ERROR ERROR
@@ -88,6 +87,7 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickn
                     (pattern_size.width * april_tag_size_pixels)};
     cv::Mat april_board{255 * cv::Mat::ones(height, width, CV_8UC1)};  // Start with white image
 
+    // Place spacers
     Eigen::ArrayX2i const spacer_grid{GenerateGridIndices(vertical_spacers, horizontal_spacers)};
     for (Eigen::Index i{0}; i < spacer_grid.rows(); ++i) {
         Eigen::Array2i const indices{spacer_grid.row(i)};
@@ -99,6 +99,7 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickn
         cv::rectangle(april_board, top_left_corner, bottom_right_corner, (0), -1);
     }
 
+    // Place tags
     Eigen::ArrayX2i const tag_grid{GenerateGridIndices(pattern_size.height, pattern_size.width)};
     for (Eigen::Index i{0}; i < tag_grid.rows(); ++i) {
         Eigen::Array2i const indices{tag_grid.row(i)};
@@ -108,11 +109,11 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickn
                                             (tag_spacing_bits * bit_size_pixels) + (white_space_border / 2)};
         cv::Point const bottom_right_corner{top_left_corner.x + april_tag_size_pixels,
                                             top_left_corner.y + april_tag_size_pixels};
-        auto const roi = cv::Rect(top_left_corner, bottom_right_corner);
+        cv::Rect const roi{cv::Rect(top_left_corner, bottom_right_corner)};
 
-        // Row major indexing - clean up!
-        Eigen::MatrixXi const code_i =
-            CalculateCodeMatrix(bit_count, tag_family[(indices(0) * pattern_size.width) + indices(1)]);
+        // Row major indexing - clean up logic!
+        Eigen::MatrixXi const code_i{
+            CalculateCodeMatrix(bit_count, tag_family[(indices(0) * pattern_size.width) + indices(1)])};
         cv::Mat const april_tag_i{GenerateAprilTag(code_i, border_thickness_bits, bit_size_pixels)};
 
         april_tag_i.copyTo(april_board(roi));

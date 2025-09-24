@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO(Jack): Add any required licensing/notices to give april tag authors credit/attribution - not my work!
+
 namespace reprojection_calibration::feature_extraction::april_tag {
 
 unsigned long long const  t36h11[] = {
