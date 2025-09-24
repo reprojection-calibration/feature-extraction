@@ -68,12 +68,78 @@ cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const border_th
     return april_tag;
 }
 
+// What if we want metric information, we work in pixel space now but we might want metric sizes eventually! This should
+// be considered for all target types potentially!
+// ERROR(Jack): We need to define a type that contains the tag family and its code, plus the number of bits. That
+// information is currently hardcoded!
+cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickness_bits, int const tag_spacing_bits,
+                           int const bit_size_pixels, unsigned long long const tag_family[]) {
+    (void)tag_family;
+    int const vertical_spacers{pattern_size.height + 1};
+    int const horizontal_spacers{pattern_size.width + 1};
+    int const bit_count{36};  // ERROR DO NOT HARDCODE ERROR ERROR ERROR
+    int const april_tag_size_pixels{(2 * border_thickness_bits * bit_size_pixels) +
+                                    (static_cast<int>(std::sqrt(bit_count)) * bit_size_pixels)};
+
+    int const white_space_border{2 * april_tag_size_pixels};
+    int const height{white_space_border + (vertical_spacers * tag_spacing_bits * bit_size_pixels) +
+                     (pattern_size.height * april_tag_size_pixels)};
+    int const width{white_space_border + (horizontal_spacers * tag_spacing_bits * bit_size_pixels) +
+                    (pattern_size.width * april_tag_size_pixels)};
+    cv::Mat april_board{255 * cv::Mat::ones(height, width, CV_8UC1)};  // Start with white image
+
+    Eigen::ArrayX2i const spacer_grid{GenerateGridIndices(vertical_spacers, horizontal_spacers)};
+    for (Eigen::Index i{0}; i < spacer_grid.rows(); ++i) {
+        Eigen::Array2i const indices{spacer_grid.row(i)};
+        cv::Point const top_left_corner{
+            ((april_tag_size_pixels + (tag_spacing_bits * bit_size_pixels)) * indices(1)) + (white_space_border / 2),
+            ((april_tag_size_pixels + (tag_spacing_bits * bit_size_pixels)) * indices(0)) + (white_space_border / 2)};
+        cv::Point const bottom_right_corner{top_left_corner.x + (tag_spacing_bits * bit_size_pixels),
+                                            top_left_corner.y + (tag_spacing_bits * bit_size_pixels)};
+        cv::rectangle(april_board, top_left_corner, bottom_right_corner, (0), -1);
+    }
+
+    Eigen::ArrayX2i const tag_grid{GenerateGridIndices(pattern_size.height, pattern_size.width)};
+    for (Eigen::Index i{0}; i < tag_grid.rows(); ++i) {
+        Eigen::Array2i const indices{tag_grid.row(i)};
+        cv::Point const top_left_corner{((april_tag_size_pixels + (tag_spacing_bits * bit_size_pixels)) * indices(1)) +
+                                            (tag_spacing_bits * bit_size_pixels) + (white_space_border / 2),
+                                        ((april_tag_size_pixels + (tag_spacing_bits * bit_size_pixels)) * indices(0)) +
+                                            (tag_spacing_bits * bit_size_pixels) + (white_space_border / 2)};
+        cv::Point const bottom_right_corner{top_left_corner.x + april_tag_size_pixels,
+                                            top_left_corner.y + april_tag_size_pixels};
+        auto const roi = cv::Rect(top_left_corner, bottom_right_corner);
+
+        // Row major indexing - clean up!
+        Eigen::MatrixXi const code_i =
+            CalculateCodeMatrix(bit_count, tag_family[(indices(0) * pattern_size.width) + indices(1)]);
+        cv::Mat const april_tag_i{GenerateAprilTag(code_i, border_thickness_bits, bit_size_pixels)};
+
+        april_tag_i.copyTo(april_board(roi));
+    }
+
+    return april_board;
+}
+
+TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
+    cv::Size const pattern_size{4, 3};
+    int const border_thickness_bits{2};  // Kalibr uses two, but most april grid applications only use one border bit.
+    int const tag_spacing_bits{2};       // Kalibr defines tag spacing differently  as a fraction of the "metricSize"
+    int const bit_size_pixel{10};
+    cv::Mat const april_board{
+        GenerateAprilBoard(pattern_size, border_thickness_bits, tag_spacing_bits, bit_size_pixel, april_tag::t36h11)};
+
+    EXPECT_EQ(april_board.rows, 580);
+    EXPECT_EQ(april_board.cols, 700);
+}
+
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
     Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, april_tag::t36h11[0])};
     int const border_thickness_bits{2};  // Kalibr uses two, but most april grid applications only use one border bit.
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(code_matrix, border_thickness_bits, bit_size_pixel)};
 
+    // TODO(Jack): Would it be better to calculate these values? Make sure we are consistent across all board types!
     EXPECT_EQ(april_tag.rows, 100);
     EXPECT_EQ(april_tag.cols, 100);
 }
