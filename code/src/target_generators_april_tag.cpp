@@ -10,8 +10,7 @@ namespace reprojection_calibration::feature_extraction {
 // information is currently hardcoded!
 // WARN(Jack): Our aprilboard orientation is completely different than the Kalibr one! In kalibr tag zero is in the
 // bottom right corner of the generated pdf.
-cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixels,
-                           uint64_t const tag_family[]) {
+cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixels, uint64_t const tag_family[]) {
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
