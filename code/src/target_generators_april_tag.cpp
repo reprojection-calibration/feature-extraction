@@ -62,13 +62,52 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickn
 
 cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const border_thickness_bits,
                          int const bit_size_pixel) {
+    (void)border_thickness_bits;  // REMOVE
     // NOTE(Jack): This logic assumes the code_matrix is square and therefore the generated april tag is square
-    int const border_thickness_pixels{2 * border_thickness_bits * bit_size_pixel};
+    int const border_thickness_pixels{8 * bit_size_pixel};
     int const data_region_size_bits{static_cast<int>(code_matrix.rows())};  // One side of the square
 
     int const height{border_thickness_pixels + (data_region_size_bits * bit_size_pixel)};
     int const width{height};
-    cv::Mat april_tag{cv::Mat::zeros(height, width, CV_8UC1)};
+    cv::Mat april_tag{255 * cv::Mat::ones(height, width, CV_8UC1)};
+
+    // Hacky way to draw the surrounding black edge rectangle - we cannot use cv::rectangle directly because to maintain
+    // constant thickness it will round the rectangle corners.
+    {
+        // Fill in the center black
+        cv::Point const top_left_corner{2 * bit_size_pixel, 2 * bit_size_pixel};
+        cv::Point const bottom_right_corner{(6 + data_region_size_bits) * bit_size_pixel,
+                                            (6 + data_region_size_bits) * bit_size_pixel};
+        cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (0), -1);
+    }
+    {
+        // Fill back in the center data part white - leaving a black rim
+        cv::Point const top_left_corner{3 * bit_size_pixel, 3 * bit_size_pixel};
+        cv::Point const bottom_right_corner{(5 + data_region_size_bits) * bit_size_pixel,
+                                            (5 + data_region_size_bits) * bit_size_pixel};
+        cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (255), -1);
+    }
+
+    {
+        // Now that we have the black border put in the corner sharping elements
+        cv::Mat corner_element{cv::Mat::zeros(2 * bit_size_pixel, 2 * bit_size_pixel, CV_8UC1)};
+        cv::Point const top_left_corner{0, 0};
+        // ERROR(Jack): It is possible that we have an "off by one" with all pixel coordinates - I only noticed here
+        // because the size ie so small it made it noticeable.
+        cv::Point const bottom_right_corner{bit_size_pixel - 1, bit_size_pixel - 1};
+        cv::rectangle(corner_element, top_left_corner, bottom_right_corner, (255), -1);
+
+        // Put in the corner element into all four corners of the tag
+        cv::Rect const roi{cv::Rect(cv::Point{0, 0}, cv::Point{2 * bit_size_pixel, 2 * bit_size_pixel})};
+        corner_element.copyTo(april_tag(roi));
+        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);
+        corner_element.copyTo(april_tag(roi));
+        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);
+        corner_element.copyTo(april_tag(roi));
+        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);
+        corner_element.copyTo(april_tag(roi));
+        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE); // Back to starting orientation
+    }
 
     // TODO(Jack): This logic is practically exactly the same as in the checkerboard generation... is there a practical
     // way to DRY ourselves here?
@@ -76,13 +115,18 @@ cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const border_th
     for (Eigen::Index i{0}; i < grid.rows(); ++i) {
         Eigen::Array2i const indices{grid.row(i)};
 
-        if (not code_matrix(indices(0), indices(1))) {
+        if (code_matrix(indices(0), indices(1))) {
             cv::Point const top_left_corner{(bit_size_pixel * indices(1)) + (border_thickness_pixels / 2),
                                             (bit_size_pixel * indices(0)) + (border_thickness_pixels / 2)};
             cv::Point const bottom_right_corner{top_left_corner.x + bit_size_pixel, top_left_corner.y + bit_size_pixel};
-            cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (255), -1);
+            cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (0), -1);
         }
     }
+
+    cv::Point const top_left_corner{2 * bit_size_pixel, 2 * bit_size_pixel};
+    cv::Point const bottom_right_corner{(6 + data_region_size_bits) * bit_size_pixel,
+                                        (6 + data_region_size_bits) * bit_size_pixel};
+    cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (0));
 
     return april_tag;
 }
@@ -94,6 +138,9 @@ Eigen::MatrixXi CalculateCodeMatrix(int const bit_count, unsigned long long tag_
     int const sqrt_bit_count{static_cast<int>(std::sqrt(bit_count))};
 
     Eigen::MatrixXi code_matrix(sqrt_bit_count, sqrt_bit_count);
+    // ERROR DO NOT FORGET CENTER PIXEL
+    // ERROR DO NOT FORGET CENTER PIXEL
+    // ERROR DO NOT FORGET CENTER PIXEL
     // ERROR DO NOT FORGET CENTER PIXEL
     for (int k{0}; k < 4; ++k) {
         for (int i{0}; i <= sqrt_bit_count / 2; ++i) {
