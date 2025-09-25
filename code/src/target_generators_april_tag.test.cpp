@@ -13,8 +13,8 @@ TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
     cv::Mat const april_board{
         GenerateAprilBoard(pattern_size,  bit_size_pixel, april_tag::custom25h9)};
 
-    EXPECT_EQ(april_board.rows, 580);
-    EXPECT_EQ(april_board.cols, 700);
+    EXPECT_EQ(april_board.rows, 390);
+    EXPECT_EQ(april_board.cols, 520);
 }
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
