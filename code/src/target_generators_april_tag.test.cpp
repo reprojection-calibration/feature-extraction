@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "april_tag_family_36h11.hpp"
+#include "april_tag_family_custom_25h9.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
 
@@ -19,13 +20,13 @@ TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
 }
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, april_tag::t36h11[0])};
+    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(25, april_tag::custom25h9[35])};
     int const border_thickness_bits{2};  // Kalibr uses two, but most april grid applications only use one border bit.
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(code_matrix, border_thickness_bits, bit_size_pixel)};
 
     // TODO(Jack): Would it be better to calculate these values? Make sure we are consistent across all board types!
-    EXPECT_EQ(april_tag.rows, 100);
+    EXPECT_EQ(april_tag.rows, 1010);
     EXPECT_EQ(april_tag.cols, 100);
 }
 

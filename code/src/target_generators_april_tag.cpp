@@ -87,19 +87,31 @@ cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const border_th
     return april_tag;
 }
 
+// Modeled on ImageLayout.java renderToArray()
 // TODO(Jack): Consider typedef for unsigned long long type used everywhere
-Eigen::MatrixXi CalculateCodeMatrix(int const bit_count, unsigned long long const tag_code) {
+// TODO(Jack): Rewrite this code without requiring the 90 degree rotations! Just make it all at once without rotations.
+Eigen::MatrixXi CalculateCodeMatrix(int const bit_count, unsigned long long tag_code) {
     int const sqrt_bit_count{static_cast<int>(std::sqrt(bit_count))};
 
     Eigen::MatrixXi code_matrix(sqrt_bit_count, sqrt_bit_count);
-    for (int i{0}; i < sqrt_bit_count; ++i) {
-        for (int j{0}; j < sqrt_bit_count; ++j) {
-            unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (sqrt_bit_count * i + j)))};
-            code_matrix(i, j) = not bit_sign;
+    // ERROR DO NOT FORGET CENTER PIXEL
+    for (int k{0}; k < 4; ++k) {
+        for (int i{0}; i <= sqrt_bit_count / 2; ++i) {
+            for (int j{i}; j < sqrt_bit_count - 1 - i; ++j) {
+                unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (bit_count - 1)))};
+                code_matrix(j, i) = not bit_sign;  // I SWITCHED I AND J AND IT BASICALLY STARTED WORKING
+
+                tag_code = tag_code << 1;
+            }
         }
+        code_matrix = Rotate90(code_matrix, true);
     }
 
-    return Rotate90(Rotate90(code_matrix));
+    // ERROR ERROR ADD CENTRAL PIXEL
+
+    // WARN(Jack): Why I need this transpose I am not 100% sure, but compared to the official implementation we look
+    // mirrored without this step.
+    return code_matrix.transpose();
 }
 
 Eigen::MatrixXi Rotate90(Eigen::MatrixXi const& matrix, bool const clockwise) {
