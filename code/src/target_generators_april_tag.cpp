@@ -106,7 +106,7 @@ cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const border_th
         corner_element.copyTo(april_tag(roi));
         cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);
         corner_element.copyTo(april_tag(roi));
-        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE); // Back to starting orientation
+        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);  // Back to starting orientation
     }
 
     // TODO(Jack): This logic is practically exactly the same as in the checkerboard generation... is there a practical
@@ -154,8 +154,13 @@ Eigen::MatrixXi CalculateCodeMatrix(int const bit_count, unsigned long long tag_
         code_matrix = Rotate90(code_matrix, true);
     }
 
-    // ERROR ERROR ADD CENTRAL PIXEL
-
+    // Set center pixel if there is one (i.e. odd numbers of rows and columns)
+    if (sqrt_bit_count % 2 != 0) {
+        unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (bit_count - 1)))};
+        // TODO(Jack): Static cast
+        code_matrix(sqrt_bit_count / 2, sqrt_bit_count / 2) =
+            not bit_sign;  // I SWITCHED I AND J AND IT BASICALLY STARTED WORKING
+    }
     // WARN(Jack): Why I need this transpose I am not 100% sure, but compared to the official implementation we look
     // mirrored without this step.
     return code_matrix.transpose();
