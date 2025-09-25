@@ -1,0 +1,47 @@
+#pragma once
+
+// TODO(Jack): Add any required licensing/notices to give april tag authors credit/attribution - not my work!
+
+namespace reprojection_calibration::feature_extraction::april_tag {
+
+static uint64_t custom25h9[37] = {
+    0x0000000001db4647UL,
+    0x00000000006a4c0cUL,
+    0x0000000001885796UL,
+    0x0000000000a66320UL,
+    0x00000000008f8b83UL,
+    0x0000000001ad970dUL,
+    0x00000000003c9cd2UL,
+    0x0000000001e9ae21UL,
+    0x0000000000342d0fUL,
+    0x0000000000c332d4UL,
+    0x0000000000ff49e8UL,
+    0x0000000001415913UL,
+    0x0000000000e97b0aUL,
+    0x0000000001b497e3UL,
+    0x00000000013502b7UL,
+    0x0000000000dd24aeUL,
+    0x000000000172c51bUL,
+    0x00000000018aa577UL,
+    0x0000000000847a49UL,
+    0x000000000003dc5eUL,
+    0x000000000185f282UL,
+    0x00000000009fb145UL,
+    0x0000000001b2e7f8UL,
+    0x000000000085183fUL,
+    0x0000000000e0231dUL,
+    0x0000000001ae6ccbUL,
+    0x000000000157d3e4UL,
+    0x0000000001c954f8UL,
+    0x00000000006ef188UL,
+    0x0000000001bfc0d4UL,
+    0x0000000001bba94aUL,
+    0x00000000011b9f53UL,
+    0x0000000000668436UL,
+    0x0000000000305fa8UL,
+    0x0000000000de5b73UL,
+    0x000000000020f440UL,
+    0x00000000001beaf7UL,
+ };
+
+} // namespace reprojection_calibration::feature_extraction
