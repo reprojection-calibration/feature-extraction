@@ -10,41 +10,23 @@ namespace reprojection_calibration::feature_extraction {
 // information is currently hardcoded!
 // WARN(Jack): Our aprilboard orientation is completely different than the Kalibr one! In kalibr tag zero is in the
 // bottom right corner of the generated pdf.
-cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const tag_spacing_bits,
-                           int const bit_size_pixels, unsigned long long const tag_family[]) {
-    int const vertical_spacers{pattern_size.height + 1};
-    int const horizontal_spacers{pattern_size.width + 1};
-    int const bit_count{36};  // ERROR DO NOT HARDCODE ERROR ERROR ERROR
-    int const april_tag_size_pixels{(2 * bit_size_pixels) +
-                                    (static_cast<int>(std::sqrt(bit_count)) * bit_size_pixels)};
+cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixels,
+                           uint64_t const tag_family[]) {
+    // ERROR DO NOT HARDCODE ERROR ERROR ERROR
+    // ERROR DO NOT HARDCODE ERROR ERROR ERROR
+    // ERROR DO NOT HARDCODE ERROR ERROR ERROR
+    int const bit_count{25};
+    int const april_tag_size_pixels{(8 * bit_size_pixels) + (static_cast<int>(std::sqrt(bit_count)) * bit_size_pixels)};
 
-    int const white_space_border{2 * april_tag_size_pixels};
-    int const height{white_space_border + (vertical_spacers * tag_spacing_bits * bit_size_pixels) +
-                     (pattern_size.height * april_tag_size_pixels)};
-    int const width{white_space_border + (horizontal_spacers * tag_spacing_bits * bit_size_pixels) +
-                    (pattern_size.width * april_tag_size_pixels)};
-    cv::Mat april_board{255 * cv::Mat::ones(height, width, CV_8UC1)};  // Start with white image
-
-    // Place spacers
-    Eigen::ArrayX2i const spacer_grid{GenerateGridIndices(vertical_spacers, horizontal_spacers)};
-    for (Eigen::Index i{0}; i < spacer_grid.rows(); ++i) {
-        Eigen::Array2i const indices{spacer_grid.row(i)};
-        cv::Point const top_left_corner{
-            ((april_tag_size_pixels + (tag_spacing_bits * bit_size_pixels)) * indices(1)) + (white_space_border / 2),
-            ((april_tag_size_pixels + (tag_spacing_bits * bit_size_pixels)) * indices(0)) + (white_space_border / 2)};
-        cv::Point const bottom_right_corner{top_left_corner.x + (tag_spacing_bits * bit_size_pixels),
-                                            top_left_corner.y + (tag_spacing_bits * bit_size_pixels)};
-        cv::rectangle(april_board, top_left_corner, bottom_right_corner, (0), -1);
-    }
+    int const height{pattern_size.height * april_tag_size_pixels};
+    int const width{pattern_size.width * april_tag_size_pixels};
+    cv::Mat april_board{cv::Mat::zeros(height, width, CV_8UC1)};
 
     // Place tags
     Eigen::ArrayX2i const tag_grid{GenerateGridIndices(pattern_size.height, pattern_size.width)};
     for (Eigen::Index i{0}; i < tag_grid.rows(); ++i) {
         Eigen::Array2i const indices{tag_grid.row(i)};
-        cv::Point const top_left_corner{((april_tag_size_pixels + (tag_spacing_bits * bit_size_pixels)) * indices(1)) +
-                                            (tag_spacing_bits * bit_size_pixels) + (white_space_border / 2),
-                                        ((april_tag_size_pixels + (tag_spacing_bits * bit_size_pixels)) * indices(0)) +
-                                            (tag_spacing_bits * bit_size_pixels) + (white_space_border / 2)};
+        cv::Point const top_left_corner{((april_tag_size_pixels)*indices(1)), ((april_tag_size_pixels)*indices(0))};
         cv::Point const bottom_right_corner{top_left_corner.x + april_tag_size_pixels,
                                             top_left_corner.y + april_tag_size_pixels};
         cv::Rect const roi{cv::Rect(top_left_corner, bottom_right_corner)};
@@ -60,8 +42,7 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const tag_spacing_b
     return april_board;
 }
 
-cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix,
-                         int const bit_size_pixel) {
+cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const bit_size_pixel) {
     // NOTE(Jack): This logic assumes the code_matrix is square and therefore the generated april tag is square
     int const border_thickness_pixels{8 * bit_size_pixel};
     int const data_region_size_bits{static_cast<int>(code_matrix.rows())};  // One side of the square

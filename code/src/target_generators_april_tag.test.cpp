@@ -9,10 +9,9 @@ using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
     cv::Size const pattern_size{4, 3};
-    int const tag_spacing_bits{2};       // Kalibr defines tag spacing differently  as a fraction of the "metricSize"
     int const bit_size_pixel{10};
     cv::Mat const april_board{
-        GenerateAprilBoard(pattern_size, tag_spacing_bits, bit_size_pixel, april_tag::t36h11)};
+        GenerateAprilBoard(pattern_size,  bit_size_pixel, april_tag::custom25h9)};
 
     EXPECT_EQ(april_board.rows, 580);
     EXPECT_EQ(april_board.cols, 700);
