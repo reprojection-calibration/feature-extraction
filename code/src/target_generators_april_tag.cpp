@@ -10,12 +10,12 @@ namespace reprojection_calibration::feature_extraction {
 // information is currently hardcoded!
 // WARN(Jack): Our aprilboard orientation is completely different than the Kalibr one! In kalibr tag zero is in the
 // bottom right corner of the generated pdf.
-cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickness_bits, int const tag_spacing_bits,
+cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const tag_spacing_bits,
                            int const bit_size_pixels, unsigned long long const tag_family[]) {
     int const vertical_spacers{pattern_size.height + 1};
     int const horizontal_spacers{pattern_size.width + 1};
     int const bit_count{36};  // ERROR DO NOT HARDCODE ERROR ERROR ERROR
-    int const april_tag_size_pixels{(2 * border_thickness_bits * bit_size_pixels) +
+    int const april_tag_size_pixels{(2 * bit_size_pixels) +
                                     (static_cast<int>(std::sqrt(bit_count)) * bit_size_pixels)};
 
     int const white_space_border{2 * april_tag_size_pixels};
@@ -52,7 +52,7 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickn
         // Row major indexing - clean up logic, maybe we need a helper that convert the 2d indices back to a 1d index.
         Eigen::MatrixXi const code_i{
             CalculateCodeMatrix(bit_count, tag_family[(indices(0) * pattern_size.width) + indices(1)])};
-        cv::Mat const april_tag_i{GenerateAprilTag(code_i, border_thickness_bits, bit_size_pixels)};
+        cv::Mat const april_tag_i{GenerateAprilTag(code_i, bit_size_pixels)};
 
         april_tag_i.copyTo(april_board(roi));
     }
@@ -60,9 +60,8 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const border_thickn
     return april_board;
 }
 
-cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const border_thickness_bits,
+cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix,
                          int const bit_size_pixel) {
-    (void)border_thickness_bits;  // REMOVE
     // NOTE(Jack): This logic assumes the code_matrix is square and therefore the generated april tag is square
     int const border_thickness_pixels{8 * bit_size_pixel};
     int const data_region_size_bits{static_cast<int>(code_matrix.rows())};  // One side of the square
