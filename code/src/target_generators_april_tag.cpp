@@ -14,8 +14,8 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixe
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
-    int const bit_count{36};
-    int const april_tag_size_pixels{(8 * bit_size_pixels) + (static_cast<int>(std::sqrt(bit_count)) * bit_size_pixels)};
+    int const num_bits{36};
+    int const april_tag_size_pixels{(8 * bit_size_pixels) + (static_cast<int>(std::sqrt(num_bits)) * bit_size_pixels)};
 
     int const height{pattern_size.height * april_tag_size_pixels};
     int const width{pattern_size.width * april_tag_size_pixels};
@@ -32,7 +32,7 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixe
 
         // TODO(Jack): Can we somehow clean up the indexing logic in here?
         cv::Mat const april_tag_i{
-            GenerateAprilTag(bit_count, tag_family[(indices(0) * pattern_size.width) + indices(1)], bit_size_pixels)};
+            GenerateAprilTag(num_bits, tag_family[(indices(0) * pattern_size.width) + indices(1)], bit_size_pixels)};
 
         april_tag_i.copyTo(april_board(roi));
     }
@@ -109,8 +109,8 @@ cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const bit_size_
     return april_tag;
 }
 
-cv::Mat GenerateAprilTag(int const bit_count, unsigned long long const tag_code, int const bit_size_pixel) {
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(bit_count, tag_code)};
+cv::Mat GenerateAprilTag(int const num_bits, unsigned long long const tag_code, int const bit_size_pixel) {
+    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(num_bits, tag_code)};
 
     return GenerateAprilTag(code_matrix, bit_size_pixel);
 }
@@ -118,14 +118,14 @@ cv::Mat GenerateAprilTag(int const bit_count, unsigned long long const tag_code,
 // Modeled on ImageLayout.java renderToArray()
 // TODO(Jack): Consider typedef for unsigned long long type used everywhere
 // TODO(Jack): Rewrite this code without requiring the 90 degree rotations! Just make it all at once without rotations.
-Eigen::MatrixXi CalculateCodeMatrix(int const bit_count, unsigned long long tag_code) {
-    int const sqrt_bit_count{static_cast<int>(std::sqrt(bit_count))};
+Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, unsigned long long tag_code) {
+    int const sqrt_num_bits{static_cast<int>(std::sqrt(num_bits))};
 
-    Eigen::MatrixXi code_matrix(sqrt_bit_count, sqrt_bit_count);
+    Eigen::MatrixXi code_matrix(sqrt_num_bits, sqrt_num_bits);
     for (int k{0}; k < 4; ++k) {
-        for (int i{0}; i <= sqrt_bit_count / 2; ++i) {
-            for (int j{i}; j < sqrt_bit_count - 1 - i; ++j) {
-                unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (bit_count - 1)))};
+        for (int i{0}; i <= sqrt_num_bits / 2; ++i) {
+            for (int j{i}; j < sqrt_num_bits - 1 - i; ++j) {
+                unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (num_bits - 1)))};
                 code_matrix(j, i) = not bit_sign;  // I SWITCHED I AND J AND IT BASICALLY STARTED WORKING
 
                 tag_code = tag_code << 1;
@@ -135,10 +135,10 @@ Eigen::MatrixXi CalculateCodeMatrix(int const bit_count, unsigned long long tag_
     }
 
     // Set center pixel if there is one (i.e. odd numbers of rows and columns)
-    if (sqrt_bit_count % 2 != 0) {
-        unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (bit_count - 1)))};
+    if (sqrt_num_bits % 2 != 0) {
+        unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (num_bits - 1)))};
         // TODO(Jack): Static cast
-        code_matrix(sqrt_bit_count / 2, sqrt_bit_count / 2) =
+        code_matrix(sqrt_num_bits / 2, sqrt_num_bits / 2) =
             not bit_sign;  // I SWITCHED I AND J AND IT BASICALLY STARTED WORKING
     }
     // WARN(Jack): Why I need this transpose I am not 100% sure, but compared to the official implementation we look
