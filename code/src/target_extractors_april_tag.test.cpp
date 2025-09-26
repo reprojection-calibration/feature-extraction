@@ -14,18 +14,22 @@ extern "C" {
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetExtractorsAprilTag, TestAprilTagDetector_Detect) {
+    // Setup detector
     AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
     AprilTagDetectorSettings const settings{2.0, 0.0, 1, false, false};
     AprilTagDetector const tag_detector{tag_family_handler, settings};
 
+    // Setup tag
     Eigen::MatrixXi const code_matrix{
         CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
 
+    // Act
     AprilTagDetections const detections{tag_detector.Detect(april_tag)};
-    apriltag_detection_t const detection_0{detections[0]};
 
+    // Test the detection
+    apriltag_detection_t const detection_0{detections[0]};
     EXPECT_EQ(detection_0.id, 0);
     // Center point
     EXPECT_FLOAT_EQ(detection_0.c[0], 71);
