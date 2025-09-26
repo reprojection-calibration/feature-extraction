@@ -4,12 +4,6 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-// What if we want metric information, we work in pixel space now but we might want metric sizes eventually! This should
-// be considered for all target types potentially!
-// ERROR(Jack): We need to define a type that contains the tag family and its code, plus the number of bits. That
-// information is currently hardcoded!
-// WARN(Jack): Our aprilboard orientation is completely different than the Kalibr one! In kalibr tag zero is in the
-// bottom right corner of the generated pdf.
 cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
                            cv::Size const& pattern_size) {
     int const april_tag_size_pixels{(8 * bit_size_pixels) + (static_cast<int>(std::sqrt(num_bits)) * bit_size_pixels)};
