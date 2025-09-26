@@ -23,7 +23,7 @@ TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
     Eigen::MatrixXi const code_matrix{
         CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
     int const bit_size_pixel{10};
-    cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
+    cv::Mat const april_tag{GenerateAprilTag(bit_size_pixel, code_matrix)};
 
     EXPECT_EQ(april_tag.rows, 140);
     EXPECT_EQ(april_tag.cols, 140);

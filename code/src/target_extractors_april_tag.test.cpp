@@ -34,7 +34,7 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilTag) {
     Eigen::MatrixXi const code_matrix{
         CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
     int const bit_size_pixel{10};
-    cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
+    cv::Mat const april_tag{GenerateAprilTag(bit_size_pixel, code_matrix)};
 
     // Act
     AprilTagDetections const detections{tag_detector.Detect(april_tag)};
@@ -43,6 +43,7 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilTag) {
     apriltag_detection_t const detection_0{detections[0]};
     EXPECT_EQ(detections.detections->size, 1);
     EXPECT_EQ(detection_0.id, 0);
+
     // Center point
     EXPECT_FLOAT_EQ(detection_0.c[0], 71);
     EXPECT_FLOAT_EQ(detection_0.c[1], 71);
