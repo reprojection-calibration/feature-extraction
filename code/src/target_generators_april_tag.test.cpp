@@ -3,13 +3,14 @@
 #include <gtest/gtest.h>
 
 #include "april_tag_family_custom_25h9.hpp"
+#include "april_tag_family_custom_36h11.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
     cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
-    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, april_tag::custom25h9)};
+    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, april_tag::custom36h11)};
 
     EXPECT_EQ(april_board.rows, 390);
     EXPECT_EQ(april_board.cols, 520);

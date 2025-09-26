@@ -14,7 +14,7 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixe
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
     // ERROR DO NOT HARDCODE ERROR ERROR ERROR
-    int const bit_count{25};
+    int const bit_count{36};
     int const april_tag_size_pixels{(8 * bit_size_pixels) + (static_cast<int>(std::sqrt(bit_count)) * bit_size_pixels)};
 
     int const height{pattern_size.height * april_tag_size_pixels};

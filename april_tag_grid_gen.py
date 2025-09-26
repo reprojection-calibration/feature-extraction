@@ -1,6 +1,6 @@
 import numpy as np
 
-tag = np.full((5, 5), "d", dtype='U1')
+tag = np.full((6, 6), "d", dtype='U1')
 
 tag = np.pad(tag, (1), 'constant', constant_values=("w"))
 tag = np.pad(tag, (1), 'constant', constant_values=("b"))
