@@ -10,14 +10,15 @@ namespace reprojection_calibration::feature_extraction {
 // be considered for all target types potentially!
 // ERROR(Jack): We need to define a type that contains the tag family and its code, plus the number of bits. That
 // information is currently hardcoded!
-cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixels, int const num_bits,
-                           uint64_t const tag_family[]);
+cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
+                           cv::Size const& pattern_size);
 
 cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const bit_size_pixels);
 
 cv::Mat GenerateAprilTag(int const num_bits, unsigned long long const tag_code, int const bit_size_pixels);
 
-// TODO(Jack): Consider typedef for unsigned long long type used everywhere
+// TODO(Jack): Consider typedef for unsigned long long type used everywhere - what even is a consistent type to use
+// everywhere?
 Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, unsigned long long const tag_code);
 
 Eigen::MatrixXi Rotate90(Eigen::MatrixXi const& matrix, bool const clockwise = false);

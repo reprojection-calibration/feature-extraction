@@ -10,8 +10,8 @@ namespace reprojection_calibration::feature_extraction {
 // information is currently hardcoded!
 // WARN(Jack): Our aprilboard orientation is completely different than the Kalibr one! In kalibr tag zero is in the
 // bottom right corner of the generated pdf.
-cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixels, int const num_bits,
-                           uint64_t const tag_family[]) {
+cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
+                           cv::Size const& pattern_size) {
     int const april_tag_size_pixels{(8 * bit_size_pixels) + (static_cast<int>(std::sqrt(num_bits)) * bit_size_pixels)};
 
     int const height{pattern_size.height * april_tag_size_pixels};
