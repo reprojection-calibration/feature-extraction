@@ -19,12 +19,19 @@ TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
     AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, tag_family_handler.tag_family->codes[0])};
+    Eigen::MatrixXi const code_matrix{
+        CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
 
     EXPECT_EQ(april_tag.rows, 140);
     EXPECT_EQ(april_tag.cols, 140);
+
+    // Test the overrided function matches the original
+    cv::Mat const april_tag_1{GenerateAprilTag(tag_family_handler.tag_family->nbits,
+                                               tag_family_handler.tag_family->codes[0], bit_size_pixel)};
+
+    EXPECT_TRUE(cv::sum(april_tag != april_tag_1) == cv::Scalar(0));
 }
 
 TEST(TargetGeneratorsAprilTag, TestCalculateCodeMatrix) {

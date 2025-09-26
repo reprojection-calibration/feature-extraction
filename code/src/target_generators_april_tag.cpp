@@ -30,10 +30,9 @@ cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixe
                                             top_left_corner.y + april_tag_size_pixels};
         cv::Rect const roi{cv::Rect(top_left_corner, bottom_right_corner)};
 
-        // Row major indexing - clean up logic, maybe we need a helper that convert the 2d indices back to a 1d index.
-        Eigen::MatrixXi const code_i{
-            CalculateCodeMatrix(bit_count, tag_family[(indices(0) * pattern_size.width) + indices(1)])};
-        cv::Mat const april_tag_i{GenerateAprilTag(code_i, bit_size_pixels)};
+        // TODO(Jack): Can we somehow clean up the indexing logic in here?
+        cv::Mat const april_tag_i{
+            GenerateAprilTag(bit_count, tag_family[(indices(0) * pattern_size.width) + indices(1)], bit_size_pixels)};
 
         april_tag_i.copyTo(april_board(roi));
     }
@@ -110,6 +109,12 @@ cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const bit_size_
     return april_tag;
 }
 
+cv::Mat GenerateAprilTag(int const bit_count, unsigned long long const tag_code, int const bit_size_pixel) {
+    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(bit_count, tag_code)};
+
+    return GenerateAprilTag(code_matrix, bit_size_pixel);
+}
+
 // Modeled on ImageLayout.java renderToArray()
 // TODO(Jack): Consider typedef for unsigned long long type used everywhere
 // TODO(Jack): Rewrite this code without requiring the 90 degree rotations! Just make it all at once without rotations.
@@ -117,10 +122,6 @@ Eigen::MatrixXi CalculateCodeMatrix(int const bit_count, unsigned long long tag_
     int const sqrt_bit_count{static_cast<int>(std::sqrt(bit_count))};
 
     Eigen::MatrixXi code_matrix(sqrt_bit_count, sqrt_bit_count);
-    // ERROR DO NOT FORGET CENTER PIXEL
-    // ERROR DO NOT FORGET CENTER PIXEL
-    // ERROR DO NOT FORGET CENTER PIXEL
-    // ERROR DO NOT FORGET CENTER PIXEL
     for (int k{0}; k < 4; ++k) {
         for (int i{0}; i <= sqrt_bit_count / 2; ++i) {
             for (int j{i}; j < sqrt_bit_count - 1 - i; ++j) {
