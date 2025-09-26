@@ -39,70 +39,61 @@ cv::Mat GenerateAprilTag(int const num_bits, uint64_t const tag_code, int const 
 }
 
 cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix) {
-    int const border_thickness_pixels{8 * bit_size_pixels};  // Three mainly white rings and one black ring - times two
-    int const data_region_size_bits{static_cast<int>(code_matrix.rows())};  // One side of the square
+    int const border_thickness_pixels{
+        4 * bit_size_pixels};  // Three mainly white rings and one black ring. This is an intrinsic property
+                               // of the tags in our proposed AprilBoard3 design.
+    int const num_bits{static_cast<int>(code_matrix.rows())};  // Could also use .cols().
 
-    int const height{border_thickness_pixels + (data_region_size_bits * bit_size_pixels)};
-    int const width{height};  // Tags are square
-    cv::Mat april_tag{255 * cv::Mat::ones(height, width, CV_8UC1)};
+    int const side_length{2 * border_thickness_pixels + (num_bits * bit_size_pixels)};
+    cv::Mat april_tag{255 * cv::Mat::ones(side_length, side_length, CV_8UC1)};  // Tags are square
 
-    // Hacky way to draw the surrounding black edge rectangle - we cannot use cv::rectangle directly because to maintain
-    // constant thickness it will round the rectangle corners.
+    // Hacky way to draw the surrounding black edge rectangle - we cannot use cv::rectangle directly because we need to
+    // have constant thickness. cv::rectangle will round corners of partially filled rectangles.
     {
-        // Fill in the center black
+        // Fill in the entire center black
         cv::Point const top_left_corner{2 * bit_size_pixels, 2 * bit_size_pixels};
-        cv::Point const bottom_right_corner{(6 + data_region_size_bits) * bit_size_pixels,
-                                            (6 + data_region_size_bits) * bit_size_pixels};
+        cv::Point const bottom_right_corner{(6 + num_bits) * bit_size_pixels, (6 + num_bits) * bit_size_pixels};
         cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (0), -1);
     }
     {
-        // Fill back in the center data part white - leaving a black rim
+        // Fill back in the center white - leaving a black rim one bit thick.
         cv::Point const top_left_corner{3 * bit_size_pixels, 3 * bit_size_pixels};
-        cv::Point const bottom_right_corner{(5 + data_region_size_bits) * bit_size_pixels,
-                                            (5 + data_region_size_bits) * bit_size_pixels};
+        cv::Point const bottom_right_corner{(5 + num_bits) * bit_size_pixels, (5 + num_bits) * bit_size_pixels};
         cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (255), -1);
     }
 
     {
-        // Now that we have the black border put in the corner sharping elements
+        // Put in the corner sharpening elements.
+        // WARM(Jack): It is possible that we have an "off by one" with all pixel coordinates - I only noticed here
+        // because the size is so small it made it noticeable. Unsure! But this is why we subtract by one here.
         cv::Mat corner_element{cv::Mat::zeros(2 * bit_size_pixels, 2 * bit_size_pixels, CV_8UC1)};
         cv::Point const top_left_corner{0, 0};
-        // ERROR(Jack): It is possible that we have an "off by one" with all pixel coordinates - I only noticed here
-        // because the size ie so small it made it noticeable.
         cv::Point const bottom_right_corner{bit_size_pixels - 1, bit_size_pixels - 1};
         cv::rectangle(corner_element, top_left_corner, bottom_right_corner, (255), -1);
 
-        // Put in the corner element into all four corners of the tag
+        // Put the corner sharpening element we just created into all four corners of the tag.
         cv::Rect const roi{cv::Rect(cv::Point{0, 0}, cv::Point{2 * bit_size_pixels, 2 * bit_size_pixels})};
-        corner_element.copyTo(april_tag(roi));
-        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);
-        corner_element.copyTo(april_tag(roi));
-        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);
-        corner_element.copyTo(april_tag(roi));
-        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);
-        corner_element.copyTo(april_tag(roi));
-        cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);  // Back to starting orientation
+        for (int i{0}; i < 4; ++i) {
+            corner_element.copyTo(april_tag(roi));
+            cv::rotate(april_tag, april_tag, cv::ROTATE_90_CLOCKWISE);
+        }
     }
 
+    // Fill in all the bits of the data region
     // TODO(Jack): This logic is practically exactly the same as in the checkerboard generation... is there a practical
     // way to DRY ourselves here?
-    Eigen::ArrayX2i const grid{GenerateGridIndices(data_region_size_bits, data_region_size_bits)};
+    Eigen::ArrayX2i const grid{GenerateGridIndices(num_bits, num_bits)};
     for (Eigen::Index i{0}; i < grid.rows(); ++i) {
         Eigen::Array2i const indices{grid.row(i)};
 
         if (code_matrix(indices(0), indices(1))) {
-            cv::Point const top_left_corner{(bit_size_pixels * indices(1)) + (border_thickness_pixels / 2),
-                                            (bit_size_pixels * indices(0)) + (border_thickness_pixels / 2)};
+            cv::Point const top_left_corner{(bit_size_pixels * indices(1)) + border_thickness_pixels,
+                                            (bit_size_pixels * indices(0)) + border_thickness_pixels};
             cv::Point const bottom_right_corner{top_left_corner.x + bit_size_pixels,
                                                 top_left_corner.y + bit_size_pixels};
             cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (0), -1);
         }
     }
-
-    cv::Point const top_left_corner{2 * bit_size_pixels, 2 * bit_size_pixels};
-    cv::Point const bottom_right_corner{(6 + data_region_size_bits) * bit_size_pixels,
-                                        (6 + data_region_size_bits) * bit_size_pixels};
-    cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (0));
 
     return april_tag;
 }
