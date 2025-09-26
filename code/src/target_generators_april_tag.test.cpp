@@ -8,10 +8,11 @@
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
+    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
     cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
-    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, tag_family_handler.tag_family->codes)};
+    cv::Mat const april_board{GenerateAprilBoard(tag_family_handler.tag_family->nbits,
+                                                 tag_family_handler.tag_family->codes, bit_size_pixel, pattern_size)};
 
     EXPECT_EQ(april_board.rows, 420);
     EXPECT_EQ(april_board.cols, 560);
@@ -22,7 +23,7 @@ TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
     Eigen::MatrixXi const code_matrix{
         CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
     int const bit_size_pixel{10};
-    cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
+    cv::Mat const april_tag{GenerateAprilTag(bit_size_pixel, code_matrix)};
 
     EXPECT_EQ(april_tag.rows, 140);
     EXPECT_EQ(april_tag.cols, 140);

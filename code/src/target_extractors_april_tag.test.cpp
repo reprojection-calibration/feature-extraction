@@ -18,10 +18,16 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilBoard) {
 
     cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
-    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, tag_family_handler.tag_family->codes)};
+    cv::Mat const april_board{GenerateAprilBoard(tag_family_handler.tag_family->nbits,
+                                                 tag_family_handler.tag_family->codes, bit_size_pixel, pattern_size)};
 
     AprilTagDetections const detections{tag_detector.Detect(april_board)};
-    EXPECT_EQ(detections.detections->size, pattern_size.height * pattern_size.width);
+
+    int const num_tags{pattern_size.height * pattern_size.width};
+    EXPECT_EQ(detections.detections->size, num_tags);
+    for (int i = 0; i < num_tags; i++) {
+        EXPECT_EQ(detections[i].id, i);  // AprilBoard3 tag IDs are always generated in order as [0, num_tags)
+    }
 }
 
 TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilTag) {
@@ -33,7 +39,7 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilTag) {
     Eigen::MatrixXi const code_matrix{
         CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
     int const bit_size_pixel{10};
-    cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
+    cv::Mat const april_tag{GenerateAprilTag(bit_size_pixel, code_matrix)};
 
     // Act
     AprilTagDetections const detections{tag_detector.Detect(april_tag)};
@@ -42,6 +48,7 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilTag) {
     apriltag_detection_t const detection_0{detections[0]};
     EXPECT_EQ(detections.detections->size, 1);
     EXPECT_EQ(detection_0.id, 0);
+
     // Center point
     EXPECT_FLOAT_EQ(detection_0.c[0], 71);
     EXPECT_FLOAT_EQ(detection_0.c[1], 71);
