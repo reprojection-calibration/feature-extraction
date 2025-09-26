@@ -98,18 +98,25 @@ cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_
     return april_tag;
 }
 
-// Modeled on ImageLayout.java renderToArray()
-// TODO(Jack): Consider typedef for unsigned long long type used everywhere
-// TODO(Jack): Rewrite this code without requiring the 90 degree rotations! Just make it all at once without rotations.
+// To understand this method you need to read the renderToArray() method in ImageLayout.java
+// (https://github.com/AprilRobotics/apriltag-generation/blob/master/src/april/tag/ImageLayout.java)
+// We simplify the implementation a little bit here because we assume that AprilBoard3 tag structure will always be the
+// same, therefore we only duplicate the actual data code area generation part here. A complete implementation of april
+// tag generation is not found here! Please see the original AprilRobotics repository for that.
 Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, uint64_t tag_code) {
-    int const sqrt_num_bits{static_cast<int>(std::sqrt(num_bits))};
+    int const sqrt_num_bits{static_cast<int>(std::sqrt(num_bits))};  // Only allow square data encoding areas
 
+    // TODO(Jack): Is there a hard reason that we need to do this by generating each quadrant and then rotating 90
+    // degrees? If not, and there is time and energy, find an implementation that just lets us iterate over a normal set
+    // of indices like one would expect.
     Eigen::MatrixXi code_matrix(sqrt_num_bits, sqrt_num_bits);
     for (int k{0}; k < 4; ++k) {
         for (int i{0}; i <= sqrt_num_bits / 2; ++i) {
             for (int j{i}; j < sqrt_num_bits - 1 - i; ++j) {
-                uint64_t bit_sign{(tag_code & (static_cast<uint64_t>(1) << (num_bits - 1)))};
-                code_matrix(j, i) = not bit_sign;  // I SWITCHED I AND J AND IT BASICALLY STARTED WORKING
+                uint64_t const bit_sign{(tag_code & (static_cast<uint64_t>(1) << (num_bits - 1)))};
+                code_matrix(j, i) = not bit_sign;  // I switched i and j from what I thought they should be, and then it
+                                                   // started working... the entire repo needs a check of consistency
+                                                   // for the ordering of its indices.
 
                 tag_code = tag_code << 1;
             }
@@ -117,15 +124,15 @@ Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, uint64_t tag_code) {
         code_matrix = Rotate90(code_matrix, true);
     }
 
-    // Set center pixel if there is one (i.e. odd numbers of rows and columns)
+    // Set center pixel if there is one (i.e. odd number of bits) - this pixel will not be set in the 90 degree quadrant
+    // rotations above -_-.
     if (sqrt_num_bits % 2 != 0) {
-        uint64_t bit_sign{(tag_code & (static_cast<uint64_t>(1) << (num_bits - 1)))};
-        // TODO(Jack): Static cast
-        code_matrix(sqrt_num_bits / 2, sqrt_num_bits / 2) =
-            not bit_sign;  // I SWITCHED I AND J AND IT BASICALLY STARTED WORKING
+        uint64_t const bit_sign{(tag_code & (static_cast<uint64_t>(1) << (num_bits - 1)))};  // COPY AND PASTE
+        code_matrix(sqrt_num_bits / 2, sqrt_num_bits / 2) = not bit_sign;
     }
+
     // WARN(Jack): Why I need this transpose I am not 100% sure, but compared to the official implementation we look
-    // mirrored without this step.
+    // mirrored without this step. This entire method is slightly hacked and this is simply that coming to the surface.
     return code_matrix.transpose();
 }
 
