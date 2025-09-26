@@ -37,7 +37,7 @@ cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int 
     return april_board;
 }
 
-cv::Mat GenerateAprilTag(int const num_bits, unsigned long long const tag_code, int const bit_size_pixel) {
+cv::Mat GenerateAprilTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixel) {
     Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(num_bits, tag_code)};
 
     return GenerateAprilTag(bit_size_pixel, code_matrix);
@@ -115,14 +115,14 @@ cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_
 // Modeled on ImageLayout.java renderToArray()
 // TODO(Jack): Consider typedef for unsigned long long type used everywhere
 // TODO(Jack): Rewrite this code without requiring the 90 degree rotations! Just make it all at once without rotations.
-Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, unsigned long long tag_code) {
+Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, uint64_t tag_code) {
     int const sqrt_num_bits{static_cast<int>(std::sqrt(num_bits))};
 
     Eigen::MatrixXi code_matrix(sqrt_num_bits, sqrt_num_bits);
     for (int k{0}; k < 4; ++k) {
         for (int i{0}; i <= sqrt_num_bits / 2; ++i) {
             for (int j{i}; j < sqrt_num_bits - 1 - i; ++j) {
-                unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (num_bits - 1)))};
+                uint64_t bit_sign{(tag_code & (static_cast<uint64_t>(1) << (num_bits - 1)))};
                 code_matrix(j, i) = not bit_sign;  // I SWITCHED I AND J AND IT BASICALLY STARTED WORKING
 
                 tag_code = tag_code << 1;
@@ -133,7 +133,7 @@ Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, unsigned long long tag_c
 
     // Set center pixel if there is one (i.e. odd numbers of rows and columns)
     if (sqrt_num_bits % 2 != 0) {
-        unsigned long long bit_sign{(tag_code & (static_cast<unsigned long long>(1) << (num_bits - 1)))};
+        uint64_t bit_sign{(tag_code & (static_cast<uint64_t>(1) << (num_bits - 1)))};
         // TODO(Jack): Static cast
         code_matrix(sqrt_num_bits / 2, sqrt_num_bits / 2) =
             not bit_sign;  // I SWITCHED I AND J AND IT BASICALLY STARTED WORKING
