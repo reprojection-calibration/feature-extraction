@@ -6,35 +6,36 @@ namespace reprojection_calibration::feature_extraction {
 
 cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
                            cv::Size const& pattern_size) {
-    int const april_tag_size_pixels{(8 * bit_size_pixels) + (static_cast<int>(std::sqrt(num_bits)) * bit_size_pixels)};
+    int const april_tag_size_pixels{
+        (8 * bit_size_pixels) +
+        (static_cast<int>(std::sqrt(num_bits)) * bit_size_pixels)};  // Fixed border width plus dynamic data area size
 
-    int const height{pattern_size.height * april_tag_size_pixels};
-    int const width{pattern_size.width * april_tag_size_pixels};
-    cv::Mat april_board{cv::Mat::zeros(height, width, CV_8UC1)};
+    cv::Mat april_board{cv::Mat::zeros(pattern_size.height * april_tag_size_pixels,
+                                       pattern_size.width * april_tag_size_pixels, CV_8UC1)};
 
-    // Place tags
-    Eigen::ArrayX2i const tag_grid{GenerateGridIndices(pattern_size.height, pattern_size.width)};
-    for (Eigen::Index i{0}; i < tag_grid.rows(); ++i) {
-        Eigen::Array2i const indices{tag_grid.row(i)};
-        cv::Point const top_left_corner{((april_tag_size_pixels)*indices(1)), ((april_tag_size_pixels)*indices(0))};
+    Eigen::ArrayX2i const tag_layout{GenerateGridIndices(pattern_size.height, pattern_size.width)};
+    for (Eigen::Index i{0}; i < tag_layout.rows(); ++i) {
+        Eigen::Array2i const indices{tag_layout.row(i)};
+
+        // Generate the tag
+        uint64_t const tag_code_i{tag_family[(indices(0) * pattern_size.width) + indices(1)]};
+        cv::Mat const april_tag_i{GenerateAprilTag(num_bits, tag_code_i, bit_size_pixels)};
+
+        // Place the tag on the board
+        cv::Point const top_left_corner{(april_tag_size_pixels * indices(1)), (april_tag_size_pixels * indices(0))};
         cv::Point const bottom_right_corner{top_left_corner.x + april_tag_size_pixels,
                                             top_left_corner.y + april_tag_size_pixels};
         cv::Rect const roi{cv::Rect(top_left_corner, bottom_right_corner)};
-
-        // TODO(Jack): Can we somehow clean up the indexing logic in here?
-        cv::Mat const april_tag_i{
-            GenerateAprilTag(num_bits, tag_family[(indices(0) * pattern_size.width) + indices(1)], bit_size_pixels)};
-
         april_tag_i.copyTo(april_board(roi));
     }
 
     return april_board;
 }
 
-cv::Mat GenerateAprilTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixel) {
+cv::Mat GenerateAprilTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixels) {
     Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(num_bits, tag_code)};
 
-    return GenerateAprilTag(bit_size_pixel, code_matrix);
+    return GenerateAprilTag(bit_size_pixels, code_matrix);
 }
 
 cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix) {
