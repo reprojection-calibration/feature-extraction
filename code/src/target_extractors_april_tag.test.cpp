@@ -22,7 +22,12 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilBoard) {
                                                  tag_family_handler.tag_family->codes, bit_size_pixel, pattern_size)};
 
     AprilTagDetections const detections{tag_detector.Detect(april_board)};
-    EXPECT_EQ(detections.detections->size, pattern_size.height * pattern_size.width);
+
+    int const num_tags{pattern_size.height * pattern_size.width};
+    EXPECT_EQ(detections.detections->size, num_tags);
+    for (int i = 0; i < num_tags; i++) {
+        EXPECT_EQ(detections[i].id, i);  // AprilBoard3 tag IDs are always generated in order as [0, num_tags)
+    }
 }
 
 TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilTag) {
