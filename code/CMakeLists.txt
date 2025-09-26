@@ -9,6 +9,7 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Werror -Wall -Wextra -Wpedantic)
 
+find_package(apriltag REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
@@ -43,6 +44,7 @@ include(GoogleTest)
 
 set(TESTS
         src/grid_utilities.test.cpp
+        src/target_extractors_april_tag.test.cpp
         src/target_extractors.test.cpp
         src/target_generators_april_tag.test.cpp
         src/target_generators.test.cpp

@@ -4,7 +4,6 @@ set -eoux pipefail
 
 apt-get update
 apt-get install --no-install-recommends --yes \
-    libapriltag-dev \
     libeigen3-dev \
     libopencv-dev
 
