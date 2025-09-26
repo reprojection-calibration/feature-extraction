@@ -1,8 +1,6 @@
 
 #include <gtest/gtest.h>
 
-#include <Eigen/Dense>
-
 #include "april_tag_handling.hpp"
 #include "target_generators_april_tag.hpp"
 
@@ -16,8 +14,7 @@ using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetExtractorsAprilTag, TestAprilTagDetector_Detect_AprilBoard) {
     AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    AprilTagDetectorSettings const settings{2.0, 0.0, 1, false, false};
-    AprilTagDetector const tag_detector{tag_family_handler, settings};
+    AprilTagDetector const tag_detector{tag_family_handler, {2.0, 0.0, 1, false, false}};
 
     cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
@@ -30,8 +27,7 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetector_Detect_AprilBoard) {
 TEST(TargetExtractorsAprilTag, TestAprilTagDetector_Detect_AprilTag) {
     // Setup detector
     AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    AprilTagDetectorSettings const settings{2.0, 0.0, 1, false, false};
-    AprilTagDetector const tag_detector{tag_family_handler, settings};
+    AprilTagDetector const tag_detector{tag_family_handler, {2.0, 0.0, 1, false, false}};
 
     // Setup tag
     Eigen::MatrixXi const code_matrix{
