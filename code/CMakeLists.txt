@@ -65,7 +65,7 @@ foreach (TEST IN LISTS TESTS)
     )
     # For inexplicable reasons, the docker build-stage build will fail if we do not include this link directory...
     # Without this it works fine in CLion, but when we build it manually it gives us problems. I should note that I
-    # diverged from the original "tip" about using aprilgrid in cmake found here (https://github.com/amy-tabb/apriltag-cmake-example/tree/master).
+    # diverged from the original "tip" about using april grid in cmake found here (https://github.com/amy-tabb/apriltag-cmake-example/tree/master).
     # Because I only wanted to use target specific commands, I omitted the link_directories() command and instead add
     # the april grid libraries via a target_link_libraries() command to our library. Apparently that was not good enough
     # for gtest! I am sure there is an official answer for this, but for not my solution is to add a
