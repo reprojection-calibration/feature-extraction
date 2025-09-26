@@ -18,12 +18,12 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetector_Detect) {
     AprilTagDetectorSettings const settings{2.0, 0.0, 1, false, false};
     AprilTagDetector const tag_detector{tag_family_handler, settings};
 
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, tag_family_handler.tag_family->codes[0])};
+    Eigen::MatrixXi const code_matrix{
+        CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
 
     AprilTagDetections const detections{tag_detector.Detect(april_tag)};
-
     apriltag_detection_t const detection_0{detections[0]};
 
     EXPECT_EQ(detection_0.id, 0);
