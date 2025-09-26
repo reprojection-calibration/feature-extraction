@@ -50,7 +50,7 @@ include(GoogleTest)
 
 set(TESTS
         src/grid_utilities.test.cpp
-        src/target_extractors_april_tag.test.cpp
+        src/april_tag_cpp_wrapper.test.cpp
         src/target_extractors.test.cpp
         src/target_generators_april_tag.test.cpp
         src/target_generators.test.cpp
