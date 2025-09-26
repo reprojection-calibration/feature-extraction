@@ -19,8 +19,8 @@ TEST(AprilTagCppWrapper, TestAprilTagDetectorDetectAprilBoard) {
     AprilTagDetector const tag_detector{tag_family_handler, {2.0, 0.0, 1, false, false}};
 
     // Setup input data
-    cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
+    cv::Size const pattern_size{4, 3};
     cv::Mat const april_board{GenerateAprilBoard(tag_family_handler.tag_family->nbits,
                                                  tag_family_handler.tag_family->codes, bit_size_pixel, pattern_size)};
 
