@@ -44,8 +44,8 @@ cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_
                                // of the tags in our proposed AprilBoard3 design.
     int const num_bits{static_cast<int>(code_matrix.rows())};  // Could also use .cols().
 
-    int const side_length{2 * border_thickness_pixels + (num_bits * bit_size_pixels)};
-    cv::Mat april_tag{255 * cv::Mat::ones(side_length, side_length, CV_8UC1)};  // Tags are square
+    int const tag_size_pixels{2 * border_thickness_pixels + (num_bits * bit_size_pixels)};
+    cv::Mat april_tag{255 * cv::Mat::ones(tag_size_pixels, tag_size_pixels, CV_8UC1)};  // Tags are square
 
     // Hacky way to draw the surrounding black edge rectangle - we cannot use cv::rectangle directly because we need to
     // have constant thickness. cv::rectangle will round corners of partially filled rectangles.
@@ -71,7 +71,8 @@ cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_
         cv::Point const bottom_right_corner{bit_size_pixels - 1, bit_size_pixels - 1};
         cv::rectangle(corner_element, top_left_corner, bottom_right_corner, (255), -1);
 
-        // Put the corner sharpening element we just created into all four corners of the tag.
+        // Put the corner sharpening element we just created into all four corners of the tag. We rotate the april tag
+        // itself to save ourselves the annoying math of calculating the rectangle corner point locations.
         cv::Rect const roi{cv::Rect(cv::Point{0, 0}, cv::Point{2 * bit_size_pixels, 2 * bit_size_pixels})};
         for (int i{0}; i < 4; ++i) {
             corner_element.copyTo(april_tag(roi));
