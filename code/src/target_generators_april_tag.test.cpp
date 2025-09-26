@@ -10,16 +10,16 @@ using namespace reprojection_calibration::feature_extraction;
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
     cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
-    AprilTagFamily const april_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, april_family_handler.tag_family->codes)};
+    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
+    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, tag_family_handler.tag_family->codes)};
 
     EXPECT_EQ(april_board.rows, 420);
     EXPECT_EQ(april_board.cols, 560);
 }
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
-    AprilTagFamily const april_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, april_family_handler.tag_family->codes[0])};
+    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
+    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, tag_family_handler.tag_family->codes[0])};
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
 
@@ -28,8 +28,8 @@ TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
 }
 
 TEST(TargetGeneratorsAprilTag, TestCalculateCodeMatrix) {
-    AprilTagFamily const april_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, april_family_handler.tag_family->codes[0])};
+    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
+    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, tag_family_handler.tag_family->codes[0])};
 
     // Check two properties of the matrix and hope if anything in the implementation breaks these catch it -_-
     EXPECT_EQ(code_matrix.sum(), 17);                                                               // Heuristic

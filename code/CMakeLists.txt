@@ -9,7 +9,11 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Werror -Wall -Wextra -Wpedantic)
 
-find_package(apriltag REQUIRED)
+# Taken from https://github.com/amy-tabb/apriltag-cmake-example/tree/master
+find_package(PkgConfig)
+pkg_search_module(apriltag REQUIRED apriltag)
+set(apriltag_INCLUDE_DIRS "${apriltag_INCLUDE_DIRS}/apriltag")
+
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
@@ -31,6 +35,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 target_link_libraries(${PROJECT_NAME} PUBLIC
         Eigen3::Eigen
+        ${apriltag_LIBRARIES}
         ${OpenCV_LIBS}
 )
 

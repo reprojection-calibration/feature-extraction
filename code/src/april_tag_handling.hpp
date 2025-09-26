@@ -6,6 +6,9 @@
 
 namespace reprojection_calibration::feature_extraction {
 
+// WARN(Jack): The const correctness and memory safety of all apriltag related code is not clear at this point!
+// (26.09.2025)
+
 // This is my attempt to RAII-ify the generated C code from the apriltag repository - without this function we need to
 // manually remember to call the *_destroy() function after we are done using a tag family. Here we instead force the
 // user to create a class that has both the tag family and its destruction function, which will be called when the class
@@ -34,6 +37,31 @@ struct AprilTagFamily {
 
    private:
     std::function<void(apriltag_family_t*)> tag_family_destroy;
+};
+
+struct AprilTagDetectorSettings {
+    double decimate;
+    double blur;
+    int threads;
+    bool debug;
+    bool refine_edges;
+};
+
+struct AprilTagDetector {
+    AprilTagDetector(AprilTagFamily const& tag_family_handler, AprilTagDetectorSettings const& settings) {
+        tag_detector = apriltag_detector_create();
+        apriltag_detector_add_family(tag_detector, tag_family_handler.tag_family);
+
+        tag_detector->quad_decimate = settings.decimate;
+        tag_detector->quad_sigma = settings.blur;
+        tag_detector->nthreads = settings.threads;
+        tag_detector->debug = settings.debug;
+        tag_detector->refine_edges = settings.refine_edges;
+    }
+
+    ~AprilTagDetector() { apriltag_detector_destroy(tag_detector); }
+
+    apriltag_detector_t* tag_detector;
 };
 
 }  // namespace reprojection_calibration::feature_extraction
