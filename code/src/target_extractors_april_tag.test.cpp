@@ -12,7 +12,7 @@ extern "C" {
 
 using namespace reprojection_calibration::feature_extraction;
 
-TEST(TargetExtractorsAprilTag, TestAprilTagDetector_Detect_AprilBoard) {
+TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilBoard) {
     AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
     AprilTagDetector const tag_detector{tag_family_handler, {2.0, 0.0, 1, false, false}};
 
@@ -24,7 +24,7 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetector_Detect_AprilBoard) {
     EXPECT_EQ(detections.detections->size, pattern_size.height * pattern_size.width);
 }
 
-TEST(TargetExtractorsAprilTag, TestAprilTagDetector_Detect_AprilTag) {
+TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilTag) {
     // Setup detector
     AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
     AprilTagDetector const tag_detector{tag_family_handler, {2.0, 0.0, 1, false, false}};
