@@ -16,6 +16,10 @@ ARG INSTALL_LIBRARY_DEPENDENCIES=building/install_scripts/install_library_depend
 RUN --mount=type=bind,source=${INSTALL_LIBRARY_DEPENDENCIES},target=/temporary/${INSTALL_LIBRARY_DEPENDENCIES} \
     /temporary/${INSTALL_LIBRARY_DEPENDENCIES}
 
+ARG INSTALL_APRIL_TAGS=building/install_scripts/install_april_tags.sh
+RUN --mount=type=bind,source=${INSTALL_APRIL_TAGS},target=/temporary/${INSTALL_APRIL_TAGS} \
+    /temporary/${INSTALL_APRIL_TAGS}
+
 FROM configuration-stage AS code-checks-stage
 
 ARG INSTALL_CODE_CHECK_DEPENDENCIES=building/install_scripts/install_code_check_dependencies.sh
