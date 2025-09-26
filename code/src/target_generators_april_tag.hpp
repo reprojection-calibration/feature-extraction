@@ -12,9 +12,9 @@ namespace reprojection_calibration::feature_extraction {
 // information is currently hardcoded!
 cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixels, uint64_t const tag_family[]);
 
-cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const bit_size_pixel);
+cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const bit_size_pixels);
 
-cv::Mat GenerateAprilTag(int const num_bits, unsigned long long const tag_code, int const bit_size_pixel);
+cv::Mat GenerateAprilTag(int const num_bits, unsigned long long const tag_code, int const bit_size_pixels);
 
 // TODO(Jack): Consider typedef for unsigned long long type used everywhere
 Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, unsigned long long const tag_code);
