@@ -1,8 +1,5 @@
-
 #include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
-
-#include "grid_utilities.hpp"
 
 namespace reprojection_calibration::feature_extraction {
 
