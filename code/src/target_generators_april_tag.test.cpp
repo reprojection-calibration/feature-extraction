@@ -2,31 +2,36 @@
 
 #include <gtest/gtest.h>
 
-#include "april_tag_family_custom_36h11.hpp"
+#include "generated_apriltag_code/tagCustom36h11.h"
 
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
     cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
-    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, april_tag::custom36h11)};
+    // TODO(Jack): If we decide to c++-ify this interface, use it here!
+    apriltag_family_t const* const tag_family_custom_36h11{tagCustom36h11_create()};
+    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, tag_family_custom_36h11->codes)};
 
     EXPECT_EQ(april_board.rows, 420);
     EXPECT_EQ(april_board.cols, 560);
 }
 
 TEST(TargetGeneratorsAprilTag, TestGenerateAprilTag) {
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, april_tag::custom36h11[0])};
+    // TODO(Jack): If we decide to c++-ify this interface, use it here!
+    apriltag_family_t const* const tag_family_custom_36h11{tagCustom36h11_create()};
+    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, tag_family_custom_36h11->codes[0])};
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
 
-    // TODO(Jack): Would it be better to calculate these values? Make sure we are consistent across all board types!
     EXPECT_EQ(april_tag.rows, 140);
     EXPECT_EQ(april_tag.cols, 140);
 }
 
 TEST(TargetGeneratorsAprilTag, TestCalculateCodeMatrix) {
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, april_tag::custom36h11[0])};
+    // TODO(Jack): If we decide to c++-ify this interface, use it here!
+    apriltag_family_t const* const tag_family_custom_36h11{tagCustom36h11_create()};
+    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(36, tag_family_custom_36h11->codes[0])};
 
     // Check two properties of the matrix and hope if anything in the implementation breaks these catch it -_-
     EXPECT_EQ(code_matrix.sum(), 17);                                                               // Heuristic

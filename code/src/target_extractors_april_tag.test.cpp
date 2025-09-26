@@ -3,7 +3,7 @@
 
 extern "C" {
 #include "apriltag/apriltag.h"
-#include "apriltag/tagCustom36h11.h"
+#include "generated_apriltag_code/tagCustom36h11.h"
 }
 
 namespace reprojection_calibration::feature_extraction {}  // namespace reprojection_calibration::feature_extraction

@@ -1,7 +1,7 @@
 #ifndef _TAGCustom36H11
 #define _TAGCustom36H11
 
-#include "apriltag.h"
+#include "apriltag/apriltag.h"
 
 #ifdef __cplusplus
 extern "C" {

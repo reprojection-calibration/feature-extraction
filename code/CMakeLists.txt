@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.28)
 project(
         feature-extraction
         VERSION 0.0.1
-        LANGUAGES CXX
+        LANGUAGES C CXX
 )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -18,6 +18,7 @@ set(SRC_FILES
         src/target_generators_april_tag.cpp
         src/target_generators.cpp
         src/target_extractors.cpp
+        src/generated_apriltag_code/tagCustom36h11.c
 )
 add_library(${PROJECT_NAME} SHARED
         ${SRC_FILES}
