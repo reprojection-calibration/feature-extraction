@@ -1,9 +1,9 @@
 #pragma once
 
 #include <functional>
+#include <opencv2/opencv.hpp>
 
 #include "apriltag/apriltag.h"
-#include <opencv2/opencv.hpp>
 
 namespace reprojection_calibration::feature_extraction {
 
@@ -48,7 +48,23 @@ struct AprilTagDetectorSettings {
     bool refine_edges;
 };
 
-// TODO(Jack): Refactor into struct
+struct AprilTagDetections {
+    AprilTagDetections(zarray_t* _detections) : detections{_detections} {}
+
+    ~AprilTagDetections() { apriltag_detections_destroy(detections); }
+
+    // WARN(Jack): This will not check out of bounds! It has assertions in the apriltag library but those will not exist
+    // in a release build.
+    apriltag_detection_t operator[](int i) const {
+        apriltag_detection_t* det;
+        zarray_get(detections, i, &det);
+
+        return *det;
+    }
+
+    zarray_t* detections;
+};
+
 struct AprilTagDetector {
     AprilTagDetector(AprilTagFamily const& tag_family_handler, AprilTagDetectorSettings const& settings) {
         tag_detector = apriltag_detector_create();
@@ -62,13 +78,11 @@ struct AprilTagDetector {
     }
 
     // WARN(Jack): Must be grayscale image
-    zarray_t* Detect(cv::Mat const& gray) const {
+    AprilTagDetections Detect(cv::Mat const& gray) const {
         image_u8_t formatted_gray{gray.cols, gray.rows, gray.cols, gray.data};
-
         zarray_t* detections = apriltag_detector_detect(tag_detector, &formatted_gray);
-        // ERROR(Jack): We need to manually destroy these detections!!!!
 
-        return detections;
+        return AprilTagDetections{detections};
     }
 
     ~AprilTagDetector() { apriltag_detector_destroy(tag_detector); }

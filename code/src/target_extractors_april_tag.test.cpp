@@ -26,14 +26,11 @@ TEST(TargetExtractorsAprilTag, XXX) {
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(code_matrix, bit_size_pixel)};
 
-    zarray_t* detections = tag_detector.Detect(april_tag);
+    AprilTagDetections detections = tag_detector.Detect(april_tag);
 
-    apriltag_detection_t* det;
-    zarray_get(detections, 0, &det);
+    apriltag_detection_t const det{detections[0]};
 
-    EXPECT_EQ(det->id, 0);
-    EXPECT_EQ(det->c[0], 71);  // Roughly the center of tag 140 pixels wide
-    EXPECT_EQ(det->c[1], 71);
-
-    apriltag_detections_destroy(detections);  // PUT INTO DESTRUCTOR OF HANDLER CLASS
+    EXPECT_EQ(det.id, 0);
+    EXPECT_EQ(det.c[0], 71);  // Roughly the center of tag 140 pixels wide
+    EXPECT_EQ(det.c[1], 71);
 }
