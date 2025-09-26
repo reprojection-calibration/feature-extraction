@@ -7,15 +7,15 @@ extern "C" {
 #include <functional>
 #include <opencv2/opencv.hpp>
 
-namespace reprojection_calibration::feature_extraction {
-
 // This is my attempt to RAII-ify the  C code from the apriltag repository. The main thing I try to fight here is
 // manually having to deallocate memory. For the detector and tag detections themselves that is relatively easy because
 // they have generic creation and destruction functions. For the tag family it is trickier because the generated code is
 // actually specific to each one (see comment in AprilTagFamily).
 //
 // WARN(Jack): The const correctness and memory safety of all apriltag related code is not clear at this point
-// (26.09.2025)! I am 99% sure that there are some big footguns in here and we will find some "presents" later.
+// (26.09.2025)! I am 99% sure that there are some big footguns in here, and we will find some "presents" later.
+
+namespace reprojection_calibration::feature_extraction {
 
 struct AprilTagFamily {
     // WARN(Jack): If the user passes mismatched _tag_family and _tag_family_destroy this class will not do what they
@@ -37,14 +37,6 @@ struct AprilTagFamily {
     std::function<void(apriltag_family_t*)> tag_family_destroy;
 };
 
-struct AprilTagDetectorSettings {
-    double decimate;
-    double blur;
-    int threads;
-    bool debug;
-    bool refine_edges;
-};
-
 struct AprilTagDetections {
     explicit AprilTagDetections(zarray_t* _detections) : detections{_detections} {}
 
@@ -52,7 +44,7 @@ struct AprilTagDetections {
 
     // WARN(Jack): This will not check out of bounds! It has assertions in the apriltag library but those will not exist
     // in a release build.
-    apriltag_detection_t operator[](int i) const {
+    apriltag_detection_t operator[](int const i) const {
         apriltag_detection_t* det;
         zarray_get(detections, i, &det);
 
@@ -63,8 +55,16 @@ struct AprilTagDetections {
 };
 
 struct AprilTagDetector {
-    AprilTagDetector(AprilTagFamily const& tag_family_handler, AprilTagDetectorSettings const& settings) {
-        tag_detector = apriltag_detector_create();
+    struct AprilTagDetectorSettings {
+        double decimate;
+        double blur;
+        int threads;
+        bool debug;
+        bool refine_edges;
+    };
+
+    AprilTagDetector(AprilTagFamily const& tag_family_handler, AprilTagDetectorSettings const& settings)
+        : tag_detector{apriltag_detector_create()} {
         apriltag_detector_add_family(tag_detector, tag_family_handler.tag_family);
 
         tag_detector->quad_decimate = settings.decimate;
@@ -76,14 +76,15 @@ struct AprilTagDetector {
 
     // WARN(Jack): Must be grayscale image
     AprilTagDetections Detect(cv::Mat const& gray) const {
-        image_u8_t formatted_gray{gray.cols, gray.rows, gray.cols, gray.data};
-        zarray_t* detections = apriltag_detector_detect(tag_detector, &formatted_gray);
+        image_u8_t raw_gray{gray.cols, gray.rows, gray.cols, gray.data};
+        zarray_t* raw_detections{apriltag_detector_detect(tag_detector, &raw_gray)};
 
-        return AprilTagDetections{detections};
+        return AprilTagDetections{raw_detections};
     }
 
     ~AprilTagDetector() { apriltag_detector_destroy(tag_detector); }
 
+   private:
     apriltag_detector_t* tag_detector;
 };
 
