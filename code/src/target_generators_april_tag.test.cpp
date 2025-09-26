@@ -11,7 +11,8 @@ TEST(TargetGeneratorsAprilTag, TestGenerateAprilBoard) {
     cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
     AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, tag_family_handler.tag_family->codes)};
+    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, tag_family_handler.tag_family->nbits,
+                                                 tag_family_handler.tag_family->codes)};
 
     EXPECT_EQ(april_board.rows, 420);
     EXPECT_EQ(april_board.cols, 560);

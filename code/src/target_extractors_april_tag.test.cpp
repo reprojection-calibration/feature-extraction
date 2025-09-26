@@ -18,7 +18,8 @@ TEST(TargetExtractorsAprilTag, TestAprilTagDetectorDetectAprilBoard) {
 
     cv::Size const pattern_size{4, 3};
     int const bit_size_pixel{10};
-    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, tag_family_handler.tag_family->codes)};
+    cv::Mat const april_board{GenerateAprilBoard(pattern_size, bit_size_pixel, tag_family_handler.tag_family->nbits,
+                                                 tag_family_handler.tag_family->codes)};
 
     AprilTagDetections const detections{tag_detector.Detect(april_board)};
     EXPECT_EQ(detections.detections->size, pattern_size.height * pattern_size.width);

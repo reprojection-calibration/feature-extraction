@@ -10,7 +10,8 @@ namespace reprojection_calibration::feature_extraction {
 // be considered for all target types potentially!
 // ERROR(Jack): We need to define a type that contains the tag family and its code, plus the number of bits. That
 // information is currently hardcoded!
-cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixels, uint64_t const tag_family[]);
+cv::Mat GenerateAprilBoard(cv::Size const& pattern_size, int const bit_size_pixels, int const num_bits,
+                           uint64_t const tag_family[]);
 
 cv::Mat GenerateAprilTag(Eigen::MatrixXi const& code_matrix, int const bit_size_pixels);
 
