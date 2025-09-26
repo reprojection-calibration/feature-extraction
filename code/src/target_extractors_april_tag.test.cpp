@@ -1,7 +1,7 @@
 
 #include <gtest/gtest.h>
 
-#include "april_tag_handling.hpp"
+#include "april_tag_cpp_wrapper.hpp"
 #include "target_generators_april_tag.hpp"
 
 extern "C" {
