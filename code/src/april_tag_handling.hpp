@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "apriltag/apriltag.h"
+#include <opencv2/opencv.hpp>
 
 namespace reprojection_calibration::feature_extraction {
 
@@ -47,6 +48,7 @@ struct AprilTagDetectorSettings {
     bool refine_edges;
 };
 
+// TODO(Jack): Refactor into struct
 struct AprilTagDetector {
     AprilTagDetector(AprilTagFamily const& tag_family_handler, AprilTagDetectorSettings const& settings) {
         tag_detector = apriltag_detector_create();
@@ -57,6 +59,16 @@ struct AprilTagDetector {
         tag_detector->nthreads = settings.threads;
         tag_detector->debug = settings.debug;
         tag_detector->refine_edges = settings.refine_edges;
+    }
+
+    // WARN(Jack): Must be grayscale image
+    zarray_t* Detect(cv::Mat const& gray) const {
+        image_u8_t formatted_gray{gray.cols, gray.rows, gray.cols, gray.data};
+
+        zarray_t* detections = apriltag_detector_detect(tag_detector, &formatted_gray);
+        // ERROR(Jack): We need to manually destroy these detections!!!!
+
+        return detections;
     }
 
     ~AprilTagDetector() { apriltag_detector_destroy(tag_detector); }
