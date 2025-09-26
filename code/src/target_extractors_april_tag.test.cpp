@@ -7,7 +7,8 @@
 #include "target_generators_april_tag.hpp"
 
 extern "C" {
-#include "apriltag/apriltag.h"
+#include <apriltag/apriltag.h>
+
 #include "generated_apriltag_code/tagCustom36h11.h"
 }
 

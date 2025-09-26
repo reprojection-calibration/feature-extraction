@@ -1,9 +1,11 @@
 #pragma once
 
+extern "C" {
+#include <apriltag/apriltag.h>
+}
+
 #include <functional>
 #include <opencv2/opencv.hpp>
-
-#include "apriltag/apriltag.h"
 
 namespace reprojection_calibration::feature_extraction {
 
@@ -49,7 +51,7 @@ struct AprilTagDetectorSettings {
 };
 
 struct AprilTagDetections {
-    AprilTagDetections(zarray_t* _detections) : detections{_detections} {}
+    explicit AprilTagDetections(zarray_t* _detections) : detections{_detections} {}
 
     ~AprilTagDetections() { apriltag_detections_destroy(detections); }
 
