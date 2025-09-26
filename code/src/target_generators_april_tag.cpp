@@ -37,6 +37,12 @@ cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int 
     return april_board;
 }
 
+cv::Mat GenerateAprilTag(int const num_bits, unsigned long long const tag_code, int const bit_size_pixel) {
+    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(num_bits, tag_code)};
+
+    return GenerateAprilTag(bit_size_pixel, code_matrix);
+}
+
 cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix) {
     int const border_thickness_pixels{8 * bit_size_pixels};  // Three mainly white rings and one black ring - times two
     int const data_region_size_bits{static_cast<int>(code_matrix.rows())};  // One side of the square
@@ -104,12 +110,6 @@ cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_
     cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (0));
 
     return april_tag;
-}
-
-cv::Mat GenerateAprilTag(int const num_bits, unsigned long long const tag_code, int const bit_size_pixel) {
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(num_bits, tag_code)};
-
-    return GenerateAprilTag(bit_size_pixel, code_matrix);
 }
 
 // Modeled on ImageLayout.java renderToArray()

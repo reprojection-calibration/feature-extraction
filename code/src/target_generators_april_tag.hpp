@@ -13,9 +13,9 @@ namespace reprojection_calibration::feature_extraction {
 cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
                            cv::Size const& pattern_size);
 
-cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix);
-
 cv::Mat GenerateAprilTag(int const num_bits, unsigned long long const tag_code, int const bit_size_pixels);
+
+cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix);
 
 // TODO(Jack): Consider typedef for unsigned long long type used everywhere - what even is a consistent type to use
 // everywhere?
