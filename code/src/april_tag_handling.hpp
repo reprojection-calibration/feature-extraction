@@ -1,0 +1,39 @@
+#pragma once
+
+#include <functional>
+
+#include "apriltag/apriltag.h"
+
+namespace reprojection_calibration::feature_extraction {
+
+// This is my attempt to RAII-ify the generated C code from the apriltag repository - without this function we need to
+// manually remember to call the *_destroy() function after we are done using a tag family. Here we instead force the
+// user to create a class that has both the tag family and its destruction function, which will be called when the class
+// destructor is called.
+//
+// This answer is still not perfect because it counts on the fact that the user passes matching arguments to the
+// constructor. If for example the user did the following:
+//
+//      AprilTagFamily(tagCustom36h11_create(), tag25h9_destroy)
+//
+// There will be problems because the passed destroy function does not match the created tag family. Given the
+// conditions we have, and the generated C code we have to deal with, I think I have done my best, but maybe there is an
+// even better way to enforce the RAII like behavior I want! The constness of the object and how it is used still needs
+// to be enforced, but I am not sure how amenable C pointer magic is to this, I dot not think it is.
+// TODO(Jack): Add a test to make sure the destructor logic is actually executing - already manually checked but still
+// :)
+// WARN(Jack): This class is a footgun! Read description above.
+struct AprilTagFamily {
+   public:
+    AprilTagFamily(apriltag_family_t* _tag_family, std::function<void(apriltag_family_t*)> _tag_family_destroy)
+        : tag_family{_tag_family}, tag_family_destroy{std::move(_tag_family_destroy)} {}
+
+    ~AprilTagFamily() { tag_family_destroy(tag_family); }
+
+    apriltag_family_t* tag_family;
+
+   private:
+    std::function<void(apriltag_family_t*)> tag_family_destroy;
+};
+
+}  // namespace reprojection_calibration::feature_extraction
