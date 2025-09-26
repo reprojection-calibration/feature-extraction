@@ -2,12 +2,11 @@
 
 #include <gtest/gtest.h>
 
-#include "target_extractors.hpp"
 #include "target_generators.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
 
-TEST(CheckerboardExtractor, TestExtractCheckerboardFeatures) {
+TEST(TargetExtractors, TestExtractCheckerboardFeatures) {
     cv::Size const pattern_size{4, 3};  // (width, height) == (cols, rows)
     int const square_size_pixels{50};
     cv::Mat const image{GenerateCheckerboard(pattern_size, square_size_pixels)};
@@ -20,7 +19,7 @@ TEST(CheckerboardExtractor, TestExtractCheckerboardFeatures) {
     EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{250, 200}.transpose(), 1e-6));  // Last pixel - heuristic
 }
 
-TEST(CheckerboardExtractor, TestExtractCirclegridFeatures) {
+TEST(TargetExtractors, TestExtractCirclegridFeatures) {
     cv::Size const pattern_size{4, 3};
     int const circle_radius_pixels{25};
     int const circle_spacing_pixels{20};  // Between circle edges
@@ -34,7 +33,7 @@ TEST(CheckerboardExtractor, TestExtractCirclegridFeatures) {
     EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{55, 55}.transpose(), 1e-6));   // Last pixel - heuristic
 }
 
-TEST(CheckerboardExtractor, TestExtractCirclegridFeaturesAsymmetric) {
+TEST(TargetExtractors, TestExtractCirclegridFeaturesAsymmetric) {
     // Refactor to use cv::Size
     // WARN(Jack): Must be even (rows)! See comment below.
     // WARN(Jack): Must be an odd number (cols) to prevent 180 degree rotation symmetry!
