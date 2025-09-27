@@ -10,9 +10,6 @@ extern "C" {
 #include "feature_extraction/generated_apriltag_code/tagCustom36h11.h"
 }
 
-// {}
-// []
-
 namespace reprojection_calibration::feature_extraction {
 
 // From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
