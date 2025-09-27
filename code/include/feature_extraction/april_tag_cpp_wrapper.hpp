@@ -132,7 +132,9 @@ Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H) 
 
 Eigen::Matrix<double, 4, 2> RefineExtractionCorners(cv::Mat const& image,
                                                     Eigen::Matrix<double, 4, 2> const& extraction_corners) {
-    Eigen::Matrix<float, 4, 2> refined_extraction_corners{extraction_corners.cast<float>()};
+    // NOTE(Jack): Eigen is column major by default, but opencv is row major (like the rest of the world...) so we need
+    // to specifically specify Eigen::RowMajor here in order for the cv::Mat view to make sense.
+    Eigen::Matrix<float, 4, 2, Eigen::RowMajor> refined_extraction_corners{extraction_corners.cast<float>()};
     cv::Mat cv_view_extraction_corners(refined_extraction_corners.rows(), refined_extraction_corners.cols(), CV_32FC1,
                                        refined_extraction_corners.data());  // cv::cornerSubPix() requires float type
 
