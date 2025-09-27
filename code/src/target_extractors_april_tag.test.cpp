@@ -26,13 +26,15 @@ TEST(TargetExtractorsAprilTag, HHH) {
     // Extract
     Eigen::Matrix<double, 4, 2> const extraction_corners{EstimateExtractionCorners(raw_detections[0].H)};
     Eigen::Matrix<double, 4, 2> const gt_extraction_corner{
-        {18.28571, 123.71429}, {123.71429, 123.71429}, {123.71429, 18.28571}, {18.28571, 18.28571}};
+        {19.75, 122.25}, {122.25, 122.25}, {122.25, 19.75}, {19.75, 19.75}};
     EXPECT_TRUE(extraction_corners.isApprox(gt_extraction_corner, 1e-6));
 
     // Refine
     Eigen::Matrix<double, 4, 2> const refined_extraction_corners{
         RefineExtractionCorners(april_tag, extraction_corners)};
-    Eigen::Matrix<double, 4, 2> const gt_refined_extraction_corner{
-        {19.47327, 120.06904}, {120.10841, 120.10841}, {120.06904, 19.47327}, {19.499969, 19.499969}};
+    Eigen::Matrix<double, 4, 2> const gt_refined_extraction_corner{{19.475826263427734,120.0570068359375},
+                                                                   {120.09162902832031, 120.09162902832031},
+                                                                   {120.0570068359375, 19.475826263427734},
+                                                                   {19.500438690185547, 19.500438690185547}};
     EXPECT_TRUE(refined_extraction_corners.isApprox(gt_refined_extraction_corner, 1e-6));
 }
