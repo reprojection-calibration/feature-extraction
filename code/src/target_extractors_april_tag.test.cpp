@@ -1,13 +1,13 @@
 
 #include <gtest/gtest.h>
 
-#include "april_tag_cpp_wrapper.hpp"
+#include "../include/feature_extraction/april_tag_cpp_wrapper.hpp"
 #include "target_generators_april_tag.hpp"
 
 extern "C" {
 #include <apriltag/apriltag.h>
 
-#include "generated_apriltag_code/tagCustom36h11.h"
+#include "feature_extraction/generated_apriltag_code/tagCustom36h11.h"
 }
 
 // {}

@@ -22,7 +22,7 @@ set(SRC_FILES
         src/target_generators_april_tag.cpp
         src/target_generators.cpp
         src/target_extractors.cpp
-        src/generated_apriltag_code/tagCustom36h11.c
+        include/feature_extraction/generated_apriltag_code/tagCustom36h11.c
 )
 add_library(${PROJECT_NAME} SHARED
         ${SRC_FILES}
@@ -50,12 +50,11 @@ include(GoogleTest)
 
 set(TESTS
         src/grid_utilities.test.cpp
-        src/april_tag_cpp_wrapper.test.cpp
         src/target_extractors_april_tag.test.cpp
         src/target_extractors.test.cpp
         src/target_generators_april_tag.test.cpp
         src/target_generators.test.cpp
-        test/feature_extraction.test.cpp
+        test/april_tag_cpp_wrapper.test.cpp
 )
 foreach (TEST IN LISTS TESTS)
     get_filename_component(TEST_NAME ${TEST} NAME)
