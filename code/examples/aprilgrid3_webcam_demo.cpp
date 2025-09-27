@@ -33,8 +33,13 @@ int main() {
 
         std::vector<AprilTagDetection> const detections{tag_detector.Detect(gray)};
         for (auto const& detection : detections) {
+            Eigen::Matrix<double, 4, 2> const extraction_corners{EstimateExtractionCorners(detection.H)};
+            Eigen::Matrix<double, 4, 2> const refined_extraction_corners{
+                RefineExtractionCorners(gray, extraction_corners)};
+
             for (int i{0}; i < 4; ++i) {
-                cv::circle(frame, cv::Point(detection.p.row(i)[0], detection.p.row(i)[1]), 1, cv::Scalar(255,0,0), 5, cv::LINE_8);
+                cv::circle(frame, cv::Point(refined_extraction_corners.row(i)[0], refined_extraction_corners.row(i)[1]), 1, cv::Scalar(255, 0, 0), 5,
+                           cv::LINE_8);
             }
         }
 

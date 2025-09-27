@@ -104,3 +104,42 @@ struct AprilTagDetector {
 };
 
 }  // namespace reprojection_calibration::feature_extraction
+
+// TEMPORARY FOR WEBCAM DEMO _ MOVE TO PROPER LOCAION_
+namespace reprojection_calibration::feature_extraction {
+
+// From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
+//
+//      The 3x3 homography matrix describing the projection from an "ideal" tag (with corners at (-1,1), (1,1), (1,-1),
+//      and (-1,-1)) to pixels in the image.
+//
+// Here the "corner" positions correspond to the four corners on the inside of the black ring that defines the "quad" of
+// an April Tag 3. In the tags designed for use in the April Board 3, the corners that we want to extract and use are
+// found on the outside of this black ring, at the intersection of the black ring and the corner element. This
+// intersection is designed to provide the characteristic checkerboard like intersection which can be refined using the
+// cv::cornerSubPix() function to provide nearly exact corner pixel coordinates.
+// ADD , int const num_bits
+Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H) {
+    Eigen::Matrix<double, 4, 2> canonical_corners{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
+    canonical_corners *= (4.5 / 3.5);  // USE NUM_BITS
+
+    // REMOVE THE COLWISE HNORMALIZED AND REPLACE WITH ROWWISE
+    Eigen::Matrix<double, 4, 2> extraction_corners{
+        (H * canonical_corners.rowwise().homogeneous().transpose()).colwise().hnormalized().transpose()};
+
+    return extraction_corners;
+}
+
+Eigen::Matrix<double, 4, 2> RefineExtractionCorners(cv::Mat const& image,
+                                                    Eigen::Matrix<double, 4, 2> const& extraction_corners) {
+    Eigen::Matrix<float, 4, 2> refined_extraction_corners{extraction_corners.cast<float>()};
+    cv::Mat cv_view_extraction_corners(refined_extraction_corners.rows(), refined_extraction_corners.cols(), CV_32FC1,
+                                       refined_extraction_corners.data());  // cv::cornerSubPix() requires float type
+
+    cv::cornerSubPix(image, cv_view_extraction_corners, cv::Size(11, 11), cv::Size(-1, -1),
+                     cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
+
+    return refined_extraction_corners.cast<double>();
+}
+
+}  // namespace reprojection_calibration::feature_extraction
