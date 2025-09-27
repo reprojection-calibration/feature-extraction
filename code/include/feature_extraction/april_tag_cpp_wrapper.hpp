@@ -121,7 +121,7 @@ namespace reprojection_calibration::feature_extraction {
 // ADD , int const num_bits
 Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H) {
     Eigen::Matrix<double, 4, 2> canonical_corners{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
-    canonical_corners *= (4.5 / 3.5);  // USE NUM_BITS
+    canonical_corners *= (5.0 / 4.0);  // USE NUM_BITS
 
     // REMOVE THE COLWISE HNORMALIZED AND REPLACE WITH ROWWISE
     Eigen::Matrix<double, 4, 2> extraction_corners{
