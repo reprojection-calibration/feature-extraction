@@ -25,7 +25,7 @@ struct AprilTagFamily {
     //
     // Then this is a huge footgun because the created tag family does not match the one that will be destroyed when the
     // destructor is called. Because of the nature of the generated code there is no way to enforce that matching pairs
-    // or passed, or that the proper destructor is called automatically.
+    // are passed, or that the proper destructor is called automatically. This is our best attempt given our options.
     AprilTagFamily(apriltag_family_t* _tag_family, std::function<void(apriltag_family_t*)> _tag_family_destroy)
         : tag_family{_tag_family}, tag_family_destroy{std::move(_tag_family_destroy)} {}
 
@@ -63,9 +63,9 @@ struct AprilTagDetector {
         bool refine_edges;
     };
 
-    AprilTagDetector(AprilTagFamily const& tag_family_handler, AprilTagDetectorSettings const& settings)
+    AprilTagDetector(AprilTagFamily const& tag_family, AprilTagDetectorSettings const& settings)
         : tag_detector{apriltag_detector_create()} {
-        apriltag_detector_add_family(tag_detector, tag_family_handler.tag_family);
+        apriltag_detector_add_family(tag_detector, tag_family.tag_family);
 
         tag_detector->quad_decimate = settings.decimate;
         tag_detector->quad_sigma = settings.blur;
