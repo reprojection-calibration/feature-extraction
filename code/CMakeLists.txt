@@ -39,6 +39,17 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         ${OpenCV_LIBS}
 )
 
+set(EXAMPLES
+        examples/aprilgrid3_webcam_demo.cpp
+)
+foreach ( EXAMPLE IN LISTS EXAMPLES)
+    get_filename_component(EXAMPLE_NAME ${EXAMPLE} NAME)
+    add_executable(${EXAMPLE_NAME} ${EXAMPLE})
+    target_link_libraries(${EXAMPLE_NAME}
+            ${PROJECT_NAME}
+    )
+endforeach ()
+
 include(FetchContent)
 FetchContent_Declare(
         googletest
