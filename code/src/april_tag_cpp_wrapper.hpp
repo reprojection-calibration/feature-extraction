@@ -4,6 +4,7 @@ extern "C" {
 #include <apriltag/apriltag.h>
 }
 
+#include <Eigen/Dense>
 #include <functional>
 #include <opencv2/opencv.hpp>
 
@@ -37,21 +38,26 @@ struct AprilTagFamily {
     std::function<void(apriltag_family_t*)> tag_family_destroy;
 };
 
-struct AprilTagDetections {
-    explicit AprilTagDetections(zarray_t* _detections) : detections{_detections} {}
+struct AprilTagDetection {
+    AprilTagDetection(apriltag_detection_t const& raw_detection) : id{raw_detection.id} {
+        // Grab the homography
+        using RowMatrix3d = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>;
+        Eigen::Map<RowMatrix3d> const H_map{raw_detection.H->data};
+        H = H_map;
 
-    ~AprilTagDetections() { apriltag_detections_destroy(detections); }
+        // Grab the center
+        c = Eigen::Vector2d{raw_detection.c[0], raw_detection.c[1]};
 
-    // WARN(Jack): This will not check out of bounds! It has assertions in the apriltag library but those will not exist
-    // in a release build.
-    apriltag_detection_t operator[](int const i) const {
-        apriltag_detection_t* det;
-        zarray_get(detections, i, &det);
-
-        return *det;
+        // Grab the points
+        for (int i{0}; i < 4; i++) {
+            p.row(i) = Eigen::Vector2d{raw_detection.p[i][0], raw_detection.p[i][1]}.transpose();
+        }
     }
 
-    zarray_t* detections;
+    int id;
+    Eigen::Matrix3d H;
+    Eigen::Vector2d c;
+    Eigen::Matrix<double, 4, 2> p;
 };
 
 struct AprilTagDetector {
@@ -75,11 +81,20 @@ struct AprilTagDetector {
     }
 
     // WARN(Jack): Must be grayscale image
-    AprilTagDetections Detect(cv::Mat const& gray) const {
+    std::vector<AprilTagDetection> Detect(cv::Mat const& gray) const {
         image_u8_t raw_gray{gray.cols, gray.rows, gray.cols, gray.data};
         zarray_t* raw_detections{apriltag_detector_detect(tag_detector, &raw_gray)};
 
-        return AprilTagDetections{raw_detections};
+        std::vector<AprilTagDetection> detections;
+        for (int i = 0; i < raw_detections->size; i++) {
+            apriltag_detection_t* raw_detection;
+            zarray_get(raw_detections, i, &raw_detection);
+            detections.emplace_back(*raw_detection);
+        }
+
+        apriltag_detections_destroy(raw_detections);
+
+        return detections;
     }
 
     ~AprilTagDetector() { apriltag_detector_destroy(tag_detector); }

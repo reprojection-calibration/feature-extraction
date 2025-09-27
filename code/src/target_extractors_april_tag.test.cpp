@@ -15,23 +15,6 @@ extern "C" {
 
 namespace reprojection_calibration::feature_extraction {
 
-struct AprilTagDetection {
-    AprilTagDetection(apriltag_detection_t const& raw_detection) {
-        // Grab the homography
-        using RowMatrix3d = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>;
-        Eigen::Map<RowMatrix3d> const H_map{raw_detection.H->data};
-        H = H_map;
-
-        // Grab the points
-        for (int i{0}; i < 4; i++) {
-            p.row(i) = Eigen::Vector2d{raw_detection.p[i][0], raw_detection.p[i][1]}.transpose();
-        }
-    }
-
-    Eigen::Matrix3d H;
-    Eigen::Matrix<double, 4, 2> p;
-};
-
 // From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
 //
 //      The 3x3 homography matrix describing the projection from an "ideal" tag (with corners at (-1,1), (1,1), (1,-1),
@@ -79,11 +62,10 @@ TEST(TargetExtractorsAprilTag, HHH) {
     int const bit_size_pixel{10};
     cv::Mat const april_tag{GenerateAprilTag(bit_size_pixel, code_matrix)};
 
-    AprilTagDetections const raw_detections{tag_detector.Detect(april_tag)};
-    AprilTagDetection const detection{raw_detections[0]};
+    std::vector<AprilTagDetection> const raw_detections{tag_detector.Detect(april_tag)};
 
     // Extract
-    Eigen::Matrix<double, 4, 2> const extraction_corners{EstimateExtractionCorners(detection.H)};
+    Eigen::Matrix<double, 4, 2> const extraction_corners{EstimateExtractionCorners(raw_detections[0].H)};
     Eigen::Matrix<double, 4, 2> const gt_extraction_corner{
         {18.28571, 123.71429}, {123.71429, 123.71429}, {123.71429, 18.28571}, {18.28571, 18.28571}};
     EXPECT_TRUE(extraction_corners.isApprox(gt_extraction_corner, 1e-6));
