@@ -10,7 +10,6 @@ extern "C" {
 #include "feature_extraction/generated_apriltag_code/tagCustom36h11.h"
 }
 
-
 using namespace reprojection_calibration::feature_extraction;
 
 TEST(TargetExtractorsAprilTag, HHH) {
@@ -34,13 +33,6 @@ TEST(TargetExtractorsAprilTag, HHH) {
     Eigen::Matrix<double, 4, 2> const refined_extraction_corners{
         RefineExtractionCorners(april_tag, extraction_corners)};
     Eigen::Matrix<double, 4, 2> const gt_refined_extraction_corner{
-        {19.47327, 120.10841}, {120.06904, 120.10841}, {120.06904, 19.499969}, {19.47327, 19.499969}};
+        {19.47327, 120.06904}, {120.10841, 120.10841}, {120.06904, 19.47327}, {19.499969, 19.499969}};
     EXPECT_TRUE(refined_extraction_corners.isApprox(gt_refined_extraction_corner, 1e-6));
-
-    // REMOVE WHEN WE ARE CONFIDENT THIS WORKS!
-    // for (int i{0}; i < 4; ++i) {
-    //    cv::circle(april_tag, cv::Point(refined_extraction_corners.row(i)[0], refined_extraction_corners.row(i)[1]),
-    //    1,
-    //              cv::Scalar(127), 1, cv::LINE_8);
-    //}
 }
