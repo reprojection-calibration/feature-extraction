@@ -38,6 +38,7 @@ struct AprilTagFamily {
     std::function<void(apriltag_family_t*)> tag_family_destroy;
 };
 
+// ERROR(Jack): Usage of const_cast<double*>
 struct AprilTagDetection {
     AprilTagDetection(apriltag_detection_t const& raw_detection)
         : id{raw_detection.id},
