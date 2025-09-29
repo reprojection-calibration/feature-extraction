@@ -39,15 +39,12 @@ struct AprilTagFamily {
 };
 
 struct AprilTagDetection {
-    AprilTagDetection(apriltag_detection_t const& raw_detection) : id{raw_detection.id} {
-        // Grab the homography
-        Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> const H_map{raw_detection.H->data};
-        H = H_map;
-
-        // Grab the center
-        c = Eigen::Vector2d{raw_detection.c[0], raw_detection.c[1]};
-
+    AprilTagDetection(apriltag_detection_t const& raw_detection)
+        : id{raw_detection.id},
+          H{Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>{raw_detection.H->data}},
+          c{Eigen::Vector2d{raw_detection.c[0], raw_detection.c[1]}} {
         // Grab the points
+        // TODO(Jack): Can we also use a map here? Definitely.
         for (int i{0}; i < 4; i++) {
             p.row(i) = Eigen::Vector2d{raw_detection.p[i][0], raw_detection.p[i][1]}.transpose();
         }
