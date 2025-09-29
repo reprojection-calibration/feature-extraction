@@ -32,12 +32,12 @@ TEST(TargetExtractorsAprilTag, HHH) {
     // Refine
     Eigen::Matrix<double, 4, 2> const refined_extraction_corners{
         RefineExtractionCorners(april_tag, extraction_corners)};
-    Eigen::Matrix<double, 4, 2> const gt_refined_extraction_corner{{19.475826263427734, 120.0570068359375},
-                                                                   {120.09162902832031, 120.09162902832031},
-                                                                   {120.0570068359375, 19.475826263427734},
-                                                                   {19.500438690185547, 19.500438690185547}};
+    Eigen::Matrix<double, 4, 2> const gt_refined_extraction_corner{{19.819417953491211, 119.27910614013672},
+                                                                   {119.13014984130859, 119.13014984130859},
+                                                                   {119.27910614013672, 19.819416046142578},
+                                                                   {19.685731887817383, 19.685731887817383}};
     EXPECT_TRUE(refined_extraction_corners.isApprox(gt_refined_extraction_corner, 1e-6));
 
     // WARN(Jack): Honestly the size of the error between the extracted and refined values is suprising. Two pixels in
-    // the worst case! Is there something wrong with the tag drawing/creation like I think might be the case?
+    // the worst case! I think the tags are now created properly, is it maybe just a property of the extractor?
 }
