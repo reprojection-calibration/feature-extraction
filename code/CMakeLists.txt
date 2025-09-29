@@ -18,11 +18,11 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(SRC_FILES
+        include/feature_extraction/generated_apriltag_code/tagCustom36h11.c
         src/grid_utilities.cpp
         src/target_generators_april_tag.cpp
         src/target_generators.cpp
         src/target_extractors.cpp
-        include/feature_extraction/generated_apriltag_code/tagCustom36h11.c
 )
 add_library(${PROJECT_NAME} SHARED
         ${SRC_FILES}
