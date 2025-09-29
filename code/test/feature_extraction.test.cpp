@@ -24,12 +24,6 @@ struct CircleGridConfig : GridConfig {
     bool asymmetric;
 };
 
-enum class AprilTagFamily { Custom36h11 };
-
-struct AprilGrid3Config : GridConfig {
-    AprilTagFamily tag_family;
-};
-
 std::function<std::optional<Eigen::MatrixX2d>(cv::Mat const&)> BuildExtractor(
     GridConfig const* const extractor_config) {
     if (extractor_config->type == GridType::Checkerboard) {

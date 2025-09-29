@@ -1,5 +1,4 @@
 #include "feature_extraction/april_tag_cpp_wrapper.hpp"
-#include "target_generators_april_tag.hpp"
 
 extern "C" {
 #include <apriltag/apriltag.h>
