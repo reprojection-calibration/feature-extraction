@@ -24,7 +24,8 @@ TEST(TargetExtractorsAprilTag, HHH) {
     std::vector<AprilTagDetection> const raw_detections{tag_detector.Detect(april_tag)};
 
     // Extract
-    Eigen::Matrix<double, 4, 2> const extraction_corners{EstimateExtractionCorners(raw_detections[0].H)};
+    Eigen::Matrix<double, 4, 2> const extraction_corners{
+        EstimateExtractionCorners(raw_detections[0].H, std::sqrt(tag_family_handler.tag_family->nbits))};
     Eigen::Matrix<double, 4, 2> const gt_extraction_corner{
         {19.75, 122.25}, {122.25, 122.25}, {122.25, 19.75}, {19.75, 19.75}};
     EXPECT_TRUE(extraction_corners.isApprox(gt_extraction_corner, 1e-6));

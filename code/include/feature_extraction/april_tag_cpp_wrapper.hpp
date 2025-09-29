@@ -119,13 +119,13 @@ namespace reprojection_calibration::feature_extraction {
 // intersection is designed to provide the characteristic checkerboard like intersection which can be refined using the
 // cv::cornerSubPix() function to provide nearly exact corner pixel coordinates.
 // ADD , int const num_bits
-Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H) {
+Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H, int const sqrt_num_bits) {
     Eigen::Matrix<double, 4, 2> canonical_corners{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
-    canonical_corners *= (5.0 / 4.0);  // USE NUM_BITS
+    double const corner_offset_scale{(sqrt_num_bits / 2.0 + 2.0) / (sqrt_num_bits / 2.0 + 1.0)};
+    canonical_corners *= corner_offset_scale;
 
-    // REMOVE THE COLWISE HNORMALIZED AND REPLACE WITH ROWWISE
     Eigen::Matrix<double, 4, 2> extraction_corners{
-        (H * canonical_corners.rowwise().homogeneous().transpose()).colwise().hnormalized().transpose()};
+        (H * canonical_corners.rowwise().homogeneous().transpose()).transpose().rowwise().hnormalized()};
 
     return extraction_corners;
 }
