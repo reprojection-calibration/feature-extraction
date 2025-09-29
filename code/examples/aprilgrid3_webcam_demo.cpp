@@ -17,7 +17,7 @@ extern "C" {
 using namespace reprojection_calibration::feature_extraction;
 
 int main() {
-    cv::VideoCapture cap(0);  // , cv::CAP_V4L2
+    cv::VideoCapture cap(0);
     if (not cap.isOpened()) {
         std::cerr << "Couldn't open video capture device" << std::endl;
         return -1;
@@ -33,6 +33,7 @@ int main() {
 
         std::vector<AprilTagDetection> const detections{tag_detector.Detect(gray)};
         for (auto const& detection : detections) {
+            // TODO(Jack): Drawing code is copy and pasted three times!
             for (int i{0}; i < 4; ++i) {
                 cv::circle(frame, cv::Point(detection.p.row(i)[0], detection.p.row(i)[1]), 1, cv::Scalar(255, 0, 0), 5,
                            cv::LINE_8);

@@ -41,8 +41,7 @@ struct AprilTagFamily {
 struct AprilTagDetection {
     AprilTagDetection(apriltag_detection_t const& raw_detection) : id{raw_detection.id} {
         // Grab the homography
-        using RowMatrix3d = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>;
-        Eigen::Map<RowMatrix3d> const H_map{raw_detection.H->data};
+        Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> const H_map{raw_detection.H->data};
         H = H_map;
 
         // Grab the center
@@ -83,7 +82,7 @@ struct AprilTagDetector {
     // WARN(Jack): Must be grayscale image
     std::vector<AprilTagDetection> Detect(cv::Mat const& gray) const {
         image_u8_t raw_gray{gray.cols, gray.rows, gray.cols, gray.data};
-        zarray_t* raw_detections{apriltag_detector_detect(tag_detector, &raw_gray)};
+        zarray_t* const raw_detections{apriltag_detector_detect(tag_detector, &raw_gray)};
 
         std::vector<AprilTagDetection> detections;
         for (int i = 0; i < raw_detections->size; i++) {
@@ -120,12 +119,14 @@ namespace reprojection_calibration::feature_extraction {
 // cv::cornerSubPix() function to provide nearly exact corner pixel coordinates.
 // ADD , int const num_bits
 Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H, int const sqrt_num_bits) {
-    Eigen::Matrix<double, 4, 2> canonical_corners{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
+    Eigen::Matrix<double, 4, 2> const canonical_corners{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
     double const corner_offset_scale{(sqrt_num_bits / 2.0 + 2.0) / (sqrt_num_bits / 2.0 + 1.0)};
-    canonical_corners *= corner_offset_scale;
 
     Eigen::Matrix<double, 4, 2> extraction_corners{
-        (H * canonical_corners.rowwise().homogeneous().transpose()).transpose().rowwise().hnormalized()};
+        (H * (corner_offset_scale * canonical_corners).rowwise().homogeneous().transpose())
+            .transpose()
+            .rowwise()
+            .hnormalized()};
 
     return extraction_corners;
 }
