@@ -1,4 +1,5 @@
 #include "target_generators_april_tag.hpp"
+
 #include <gtest/gtest.h>
 
 #include "april_tag_cpp_wrapper.hpp"

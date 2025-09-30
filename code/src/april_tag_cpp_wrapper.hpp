@@ -40,7 +40,7 @@ struct AprilTagFamily {
 
 // ERROR(Jack): Usage of const_cast<double*>
 struct AprilTagDetection {
-    AprilTagDetection(apriltag_detection_t const& raw_detection)
+    explicit AprilTagDetection(apriltag_detection_t const& raw_detection)
         : id{raw_detection.id},
           H{Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>{raw_detection.H->data}},
           c{Eigen::Vector2d{raw_detection.c[0], raw_detection.c[1]}},

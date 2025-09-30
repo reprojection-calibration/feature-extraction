@@ -1,4 +1,3 @@
-
 #include <gtest/gtest.h>
 
 #include "feature_extraction/target_extraction.hpp"
