@@ -30,7 +30,6 @@ struct AprilTagFamily {
     std::function<void(apriltag_family_t*)> tag_family_destroy;
 };
 
-
 struct AprilTagDetection {
     explicit AprilTagDetection(apriltag_detection_t const& raw_detection);
 
@@ -54,7 +53,8 @@ struct AprilTagDetector {
     // WARN(Jack): Must be grayscale image
     std::vector<AprilTagDetection> Detect(cv::Mat const& gray) const;
 
-    ~AprilTagDetector() ;
+    ~AprilTagDetector();
+
    private:
     apriltag_detector_t* tag_detector;
 };
