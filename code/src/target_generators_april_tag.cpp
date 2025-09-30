@@ -4,7 +4,7 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
+cv::Mat AprilBoard3Generation::GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
                            cv::Size const& pattern_size) {
     int const april_tag_size_pixels{
         (8 * bit_size_pixels) +
@@ -32,13 +32,13 @@ cv::Mat GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int 
     return april_board;
 }
 
-cv::Mat GenerateAprilTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixels) {
+cv::Mat AprilBoard3Generation::GenerateAprilTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixels) {
     Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(num_bits, tag_code)};
 
     return GenerateAprilTag(bit_size_pixels, code_matrix);
 }
 
-cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix) {
+cv::Mat AprilBoard3Generation::GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix) {
     int const border_thickness_pixels{
         4 * bit_size_pixels};  // Three mainly white rings and one black ring. This is an intrinsic property
                                // of the tags in our proposed AprilBoard3 design.
@@ -99,7 +99,7 @@ cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_
 // We simplify the implementation a little bit here because we assume that AprilBoard3 tag structure will always be the
 // same, therefore we only duplicate the actual data code area generation part here. A complete implementation of april
 // tag generation is not found here! Please see the original AprilRobotics repository for that.
-Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, uint64_t tag_code) {
+Eigen::MatrixXi AprilBoard3Generation::CalculateCodeMatrix(int const num_bits, uint64_t tag_code) {
     int const sqrt_num_bits{static_cast<int>(std::sqrt(num_bits))};  // Only allow square data encoding areas
 
     // TODO(Jack): Is there a hard reason that we need to do this by generating each quadrant and then rotating 90
@@ -132,7 +132,7 @@ Eigen::MatrixXi CalculateCodeMatrix(int const num_bits, uint64_t tag_code) {
     return code_matrix.transpose();
 }
 
-Eigen::MatrixXi Rotate90(Eigen::MatrixXi const& matrix, bool const clockwise) {
+Eigen::MatrixXi AprilBoard3Generation::Rotate90(Eigen::MatrixXi const& matrix, bool const clockwise) {
     Eigen::MatrixXi const matrix_star{matrix.transpose()};
 
     return clockwise ? matrix_star.rowwise().reverse().eval() : matrix_star.colwise().reverse().eval();
