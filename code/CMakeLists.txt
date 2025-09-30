@@ -20,9 +20,10 @@ find_package(OpenCV REQUIRED)
 set(SRC_FILES
         src/generated_apriltag_code/tagCustom36h11.c
         src/grid_utilities.cpp
+        src/target_extraction.cpp
+        src/target_extractors.cpp
         src/target_generators_april_tag.cpp
         src/target_generators.cpp
-        src/target_extractors.cpp
 )
 add_library(${PROJECT_NAME} SHARED
         ${SRC_FILES}
@@ -73,7 +74,7 @@ set(TESTS
         src/target_extractors.test.cpp
         src/target_generators_april_tag.test.cpp
         src/target_generators.test.cpp
-        test/feature_extraction.test.cpp
+        test/target_extraction.test.cpp
 )
 foreach (TEST IN LISTS TESTS)
     get_filename_component(TEST_NAME ${TEST} NAME)

@@ -22,7 +22,7 @@ class AprilTagTestFixture : public ::testing::Test {
 
     AprilTagFamily tag_family_handler_;
     AprilTagDetector tag_detector_;
-    Eigen::MatrixXi code_matrix_0_;
+    Eigen::MatrixXi code_matrix_0_;  // Arbitrarily choose the first code for testing
     int bit_size_pixel_;
 };
 
