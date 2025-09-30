@@ -1,9 +1,11 @@
 #include "target_generators_april_tag.hpp"
-
 #include <gtest/gtest.h>
 
-#include "feature_extraction/april_tag_cpp_wrapper.hpp"
-#include "feature_extraction/generated_apriltag_code/tagCustom36h11.h"
+#include "april_tag_cpp_wrapper.hpp"
+
+extern "C" {
+#include "generated_apriltag_code/tagCustom36h11.h"
+}
 
 using namespace reprojection_calibration::feature_extraction;
 

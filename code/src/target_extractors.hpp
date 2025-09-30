@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <optional>
 
-#include "feature_extraction/april_tag_cpp_wrapper.hpp"
+#include "april_tag_cpp_wrapper.hpp"
 #include "feature_extraction/target_extraction.hpp"
 
 namespace reprojection_calibration::feature_extraction {
