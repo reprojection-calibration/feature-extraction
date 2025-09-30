@@ -2,12 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include "april_tag_test_fixture.hpp"
 #include "target_generators.hpp"
-#include "target_generators_april_tag.hpp"
-
-extern "C" {
-#include "generated_apriltag_code/tagCustom36h11.h"
-}
 
 using namespace reprojection_calibration::feature_extraction;
 
@@ -67,14 +63,10 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
     EXPECT_TRUE(pixels->row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));  // Last pixel - heuristic
 }
 
-TEST(TargetExtractorsAprilTag, TestAprilGrid3Extractor) {
-    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    Eigen::MatrixXi const code_matrix{
-        CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
-    int const bit_size_pixel{10};
-    cv::Mat const april_tag{GenerateAprilTag(bit_size_pixel, code_matrix)};
+TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
+    cv::Mat const april_tag{GenerateAprilTag(bit_size_pixel_, code_matrix_0_)};
 
-    cv::Size const pattern_size{7, 6};  // WARN(Jack): Not actually needed here yet
+    cv::Size const pattern_size{4, 3};  // WARN(Jack): Not actually needed here yet
     auto const extractor{AprilGrid3Extractor{pattern_size}};
 
     std::optional<Eigen::MatrixX2d> const pixels{extractor.Extract(april_tag)};
