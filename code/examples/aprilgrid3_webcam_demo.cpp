@@ -1,0 +1,41 @@
+#include <iostream>
+
+#include "feature_extraction/target_extraction.hpp"
+
+// To get this working from CLion dev env I followed this link:
+// https://medium.com/@steffen.stautmeister/how-to-build-and-run-opencv-and-pytorch-c-with-cuda-support-in-docker-in-clion-6f485155deb8
+// After doing that my toolchain "Container Settings" were:
+//      -e DISPLAY=:0.0 --entrypoint= -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev:/dev --privileged --rm
+
+using namespace reprojection_calibration::feature_extraction;
+
+int main() {
+    cv::VideoCapture cap(0);
+    if (not cap.isOpened()) {
+        std::cerr << "Couldn't open video capture device" << std::endl;
+        return -1;
+    }
+
+    std::unique_ptr<TargetExtractor> const extractor{CreateTargetExtractor(TargetType::AprilGrid3)};
+
+    cv::Mat frame, gray;
+    while (true) {
+        cap >> frame;
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+        std::optional<Eigen::MatrixX2d> const pixels{extractor->Extract(gray)};
+        if (pixels.has_value()) {
+            for (Eigen::Index i{0}; i < pixels.value().rows(); ++i) {
+                cv::circle(frame, cv::Point(pixels.value().row(i)[0], pixels.value().row(i)[1]), 1,
+                           cv::Scalar(0, 255, 0), 5, cv::LINE_8);
+            }
+        }
+
+        cv::imshow("Tag Detections", frame);
+        if (cv::waitKey(30) >= 0) {
+            break;
+        }
+    }
+
+    return 0;
+}

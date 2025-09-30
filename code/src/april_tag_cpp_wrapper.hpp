@@ -4,6 +4,7 @@ extern "C" {
 #include <apriltag/apriltag.h>
 }
 
+#include <Eigen/Dense>
 #include <functional>
 #include <opencv2/opencv.hpp>
 
@@ -25,7 +26,7 @@ struct AprilTagFamily {
     //
     // Then this is a huge footgun because the created tag family does not match the one that will be destroyed when the
     // destructor is called. Because of the nature of the generated code there is no way to enforce that matching pairs
-    // or passed, or that the proper destructor is called automatically.
+    // are passed, or that the proper destructor is called automatically. This is our best attempt given our options.
     AprilTagFamily(apriltag_family_t* _tag_family, std::function<void(apriltag_family_t*)> _tag_family_destroy)
         : tag_family{_tag_family}, tag_family_destroy{std::move(_tag_family_destroy)} {}
 
@@ -37,21 +38,18 @@ struct AprilTagFamily {
     std::function<void(apriltag_family_t*)> tag_family_destroy;
 };
 
-struct AprilTagDetections {
-    explicit AprilTagDetections(zarray_t* _detections) : detections{_detections} {}
+// ERROR(Jack): Usage of const_cast<double*>
+struct AprilTagDetection {
+    explicit AprilTagDetection(apriltag_detection_t const& raw_detection)
+        : id{raw_detection.id},
+          H{Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>{raw_detection.H->data}},
+          c{Eigen::Vector2d{raw_detection.c[0], raw_detection.c[1]}},
+          p{Eigen::Map<Eigen::Matrix<double, 4, 2, Eigen::RowMajor>>{const_cast<double*>(&raw_detection.p[0][0])}} {}
 
-    ~AprilTagDetections() { apriltag_detections_destroy(detections); }
-
-    // WARN(Jack): This will not check out of bounds! It has assertions in the apriltag library but those will not exist
-    // in a release build.
-    apriltag_detection_t operator[](int const i) const {
-        apriltag_detection_t* det;
-        zarray_get(detections, i, &det);
-
-        return *det;
-    }
-
-    zarray_t* detections;
+    int id;
+    Eigen::Matrix3d H;
+    Eigen::Vector2d c;
+    Eigen::Matrix<double, 4, 2> p;
 };
 
 struct AprilTagDetector {
@@ -63,9 +61,9 @@ struct AprilTagDetector {
         bool refine_edges;
     };
 
-    AprilTagDetector(AprilTagFamily const& tag_family_handler, AprilTagDetectorSettings const& settings)
+    AprilTagDetector(AprilTagFamily const& tag_family, AprilTagDetectorSettings const& settings)
         : tag_detector{apriltag_detector_create()} {
-        apriltag_detector_add_family(tag_detector, tag_family_handler.tag_family);
+        apriltag_detector_add_family(tag_detector, tag_family.tag_family);
 
         tag_detector->quad_decimate = settings.decimate;
         tag_detector->quad_sigma = settings.blur;
@@ -75,11 +73,20 @@ struct AprilTagDetector {
     }
 
     // WARN(Jack): Must be grayscale image
-    AprilTagDetections Detect(cv::Mat const& gray) const {
+    std::vector<AprilTagDetection> Detect(cv::Mat const& gray) const {
         image_u8_t raw_gray{gray.cols, gray.rows, gray.cols, gray.data};
-        zarray_t* raw_detections{apriltag_detector_detect(tag_detector, &raw_gray)};
+        zarray_t* const raw_detections{apriltag_detector_detect(tag_detector, &raw_gray)};
 
-        return AprilTagDetections{raw_detections};
+        std::vector<AprilTagDetection> detections;
+        for (int i = 0; i < raw_detections->size; i++) {
+            apriltag_detection_t* raw_detection;
+            zarray_get(raw_detections, i, &raw_detection);
+            detections.emplace_back(*raw_detection);
+        }
+
+        apriltag_detections_destroy(raw_detections);
+
+        return detections;
     }
 
     ~AprilTagDetector() { apriltag_detector_destroy(tag_detector); }
@@ -87,5 +94,48 @@ struct AprilTagDetector {
    private:
     apriltag_detector_t* tag_detector;
 };
+
+}  // namespace reprojection_calibration::feature_extraction
+
+// TEMPORARY FOR WEBCAM DEMO _ MOVE TO PROPER LOCAION_
+namespace reprojection_calibration::feature_extraction {
+
+// From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
+//
+//      The 3x3 homography matrix describing the projection from an "ideal" tag (with corners at (-1,1), (1,1), (1,-1),
+//      and (-1,-1)) to pixels in the image.
+//
+// Here the "corner" positions correspond to the four corners on the inside of the black ring that defines the "quad" of
+// an April Tag 3. In the tags designed for use in the April Board 3, the corners that we want to extract and use are
+// found on the outside of this black ring, at the intersection of the black ring and the corner element. This
+// intersection is designed to provide the characteristic checkerboard like intersection which can be refined using the
+// cv::cornerSubPix() function to provide nearly exact corner pixel coordinates.
+// ADD , int const num_bits
+Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H, int const sqrt_num_bits) {
+    Eigen::Matrix<double, 4, 2> const canonical_corners{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
+    double const corner_offset_scale{(sqrt_num_bits / 2.0 + 2.0) / (sqrt_num_bits / 2.0 + 1.0)};
+
+    Eigen::Matrix<double, 4, 2> extraction_corners{
+        (H * (corner_offset_scale * canonical_corners).rowwise().homogeneous().transpose())
+            .transpose()
+            .rowwise()
+            .hnormalized()};
+
+    return extraction_corners;
+}
+
+Eigen::Matrix<double, 4, 2> RefineExtractionCorners(cv::Mat const& image,
+                                                    Eigen::Matrix<double, 4, 2> const& extraction_corners) {
+    // NOTE(Jack): Eigen is column major by default, but opencv is row major (like the rest of the world...) so we need
+    // to specifically specify Eigen::RowMajor here in order for the cv::Mat view to make sense.
+    Eigen::Matrix<float, 4, 2, Eigen::RowMajor> refined_extraction_corners{extraction_corners.cast<float>()};
+    cv::Mat cv_view_extraction_corners(refined_extraction_corners.rows(), refined_extraction_corners.cols(), CV_32FC1,
+                                       refined_extraction_corners.data());  // cv::cornerSubPix() requires float type
+
+    cv::cornerSubPix(image, cv_view_extraction_corners, cv::Size(11, 11), cv::Size(-1, -1),
+                     cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
+
+    return refined_extraction_corners.cast<double>();
+}
 
 }  // namespace reprojection_calibration::feature_extraction

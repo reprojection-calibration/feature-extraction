@@ -52,7 +52,7 @@ cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_
     {
         // Fill in the entire center black
         cv::Point const top_left_corner{2 * bit_size_pixels, 2 * bit_size_pixels};
-        cv::Point const bottom_right_corner{(6 + num_bits) * bit_size_pixels, (6 + num_bits) * bit_size_pixels};
+        cv::Point const bottom_right_corner{(6 + num_bits) * bit_size_pixels - 1, (6 + num_bits) * bit_size_pixels - 1};
         cv::rectangle(april_tag, top_left_corner, bottom_right_corner, (0), -1);
     }
     {
@@ -64,12 +64,7 @@ cv::Mat GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_
 
     {
         // Put in the corner sharpening elements.
-        // WARM(Jack): It is possible that we have an "off by one" with all pixel coordinates - I only noticed here
-        // because the size is so small it made it noticeable. Unsure! But this is why we subtract by one here.
-        cv::Mat corner_element{cv::Mat::zeros(2 * bit_size_pixels, 2 * bit_size_pixels, CV_8UC1)};
-        cv::Point const top_left_corner{0, 0};
-        cv::Point const bottom_right_corner{bit_size_pixels - 1, bit_size_pixels - 1};
-        cv::rectangle(corner_element, top_left_corner, bottom_right_corner, (255), -1);
+        cv::Mat const corner_element{cv::Mat::zeros(2 * bit_size_pixels, 2 * bit_size_pixels, CV_8UC1)};
 
         // Put the corner sharpening element we just created into all four corners of the tag. We rotate the april tag
         // itself to save ourselves the annoying math of calculating the rectangle corner point locations.
