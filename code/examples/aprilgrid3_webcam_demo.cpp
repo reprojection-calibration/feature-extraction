@@ -1,12 +1,6 @@
-#include "feature_extraction/april_tag_cpp_wrapper.hpp"
-
-extern "C" {
-#include <apriltag/apriltag.h>
-
-#include "feature_extraction/generated_apriltag_code/tagCustom36h11.h"
-}
-
 #include <iostream>
+
+#include "feature_extraction/target_extraction.hpp"
 
 // To get this working from CLion dev env I followed this link:
 // https://medium.com/@steffen.stautmeister/how-to-build-and-run-opencv-and-pytorch-c-with-cuda-support-in-docker-in-clion-6f485155deb8
@@ -22,33 +16,18 @@ int main() {
         return -1;
     }
 
-    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    AprilTagDetector const tag_detector{tag_family_handler, {2.0, 0.0, 1, false, false}};
+    std::unique_ptr<TargetExtractor> const extractor{CreateTargetExtractor(TargetType::AprilGrid3)};
 
     cv::Mat frame, gray;
     while (true) {
         cap >> frame;
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-        std::vector<AprilTagDetection> const detections{tag_detector.Detect(gray)};
-        for (auto const& detection : detections) {
-            // TODO(Jack): Drawing code is copy and pasted three times!
-            for (int i{0}; i < 4; ++i) {
-                cv::circle(frame, cv::Point(detection.p.row(i)[0], detection.p.row(i)[1]), 1, cv::Scalar(255, 0, 0), 5,
-                           cv::LINE_8);
-            }
-            Eigen::Matrix<double, 4, 2> const extraction_corners{
-                EstimateExtractionCorners(detection.H, tag_family_handler.tag_family->nbits)};
-            for (int i{0}; i < 4; ++i) {
-                cv::circle(frame, cv::Point(extraction_corners.row(i)[0], extraction_corners.row(i)[1]), 1,
-                           cv::Scalar(0, 0, 255), 5, cv::LINE_8);
-            }
-            Eigen::Matrix<double, 4, 2> const refined_extraction_corners{
-                RefineExtractionCorners(gray, extraction_corners)};
-
-            for (int i{0}; i < 4; ++i) {
-                cv::circle(frame, cv::Point(refined_extraction_corners.row(i)[0], refined_extraction_corners.row(i)[1]),
-                           1, cv::Scalar(0, 255, 0), 5, cv::LINE_8);
+        std::optional<Eigen::MatrixX2d> const pixels{extractor->Extract(gray)};
+        if (pixels.has_value()) {
+            for (Eigen::Index i{0}; i < pixels.value().rows(); ++i) {
+                cv::circle(frame, cv::Point(pixels.value().row(i)[0], pixels.value().row(i)[1]), 1,
+                           cv::Scalar(0, 255, 0), 5, cv::LINE_8);
             }
         }
 
