@@ -60,11 +60,11 @@ enable_testing()
 include(GoogleTest)
 
 set(TESTS
+        src/april_tag_cpp_wrapper.test.cpp
         src/grid_utilities.test.cpp
         src/target_extractors.test.cpp
         src/target_generators_april_tag.test.cpp
         src/target_generators.test.cpp
-        src/april_tag_cpp_wrapper.test.cpp
         test/feature_extraction.test.cpp
 )
 foreach (TEST IN LISTS TESTS)
