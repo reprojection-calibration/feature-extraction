@@ -1,5 +1,7 @@
 #include "target_extractors.hpp"
 
+#include <iostream> // REMOVE
+
 extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
 }
@@ -8,7 +10,8 @@ extern "C" {
 
 namespace reprojection_calibration::feature_extraction {
 
-CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size) : TargetExtractor(pattern_size) {}
+CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size)
+    : TargetExtractor(pattern_size), point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)} {}
 
 std::optional<Eigen::MatrixX2d> CheckerboardExtractor::Extract(cv::Mat const& image) const {
     std::vector<cv::Point2f> corners;
@@ -27,7 +30,28 @@ std::optional<Eigen::MatrixX2d> CheckerboardExtractor::Extract(cv::Mat const& im
 }
 
 CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric)
-    : TargetExtractor(pattern_size), asymmetric_{asymmetric} {}
+    : TargetExtractor(pattern_size), asymmetric_{asymmetric} {
+    if (asymmetric_) {
+        // TODO(Jack): Make pattern size specification consistent!!!! Not 3x7!!!!
+        Eigen::ArrayX2i grid{GenerateGridIndices(pattern_size.height, pattern_size.width)};
+
+        // NOTE(Jack): Eigen does not provide direct way to apply the modulo operator, so we follow a method using a
+        // unaryExpr() that we adopted from here
+        // (https://stackoverflow.com/questions/35798698/eigen-matrix-library-coefficient-wise-modulo-operation)
+        // TODO(Jack): Combine this with the logic for the asymmetric target generation!
+        Eigen::ArrayXi const is_even{
+            ((grid.rowwise().sum().unaryExpr([](int const x) { return x % 2; })) == 0).cast<int>()};
+        std::cout << is_even << std::endl;
+
+        Eigen::ArrayXi const mask{MaskIndices(is_even)};
+        std::cout << mask << std::endl;
+
+        point_indices_ = grid(mask, Eigen::all);
+        std::cout << point_indices_ << std::endl;
+    } else {
+        point_indices_ = GenerateGridIndices(pattern_size_.height, pattern_size_.width);
+    }
+}
 
 std::optional<Eigen::MatrixX2d> CircleGridExtractor::Extract(cv::Mat const& image) const {
     // cv::CALIB_CB_CLUSTERING - "uses a special algorithm for grid detection. It is more robust to perspective
