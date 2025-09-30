@@ -35,7 +35,7 @@ class AprilGrid3Extractor : public TargetExtractor {
     static Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H, int const sqrt_num_bits);
 
     static Eigen::Matrix<double, 4, 2> RefineCorners(cv::Mat const& image,
-                                                    Eigen::Matrix<double, 4, 2> const& extraction_corners);
+                                                     Eigen::Matrix<double, 4, 2> const& extraction_corners);
 
    private:
     AprilTagFamily tag_family_;

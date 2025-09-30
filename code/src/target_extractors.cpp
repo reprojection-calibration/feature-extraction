@@ -65,8 +65,7 @@ std::optional<Eigen::MatrixX2d> AprilGrid3Extractor::Extract(cv::Mat const& imag
     for (size_t i{0}; i < std::size(raw_detections); ++i) {
         Eigen::Matrix<double, 4, 2> const extraction_corners{
             EstimateExtractionCorners(raw_detections[i].H, std::sqrt(tag_family_.tag_family->nbits))};
-        Eigen::Matrix<double, 4, 2> const refined_extraction_corners{
-            RefineCorners(image, extraction_corners)};
+        Eigen::Matrix<double, 4, 2> const refined_extraction_corners{RefineCorners(image, extraction_corners)};
 
         points.block<4, 2>(4 * i, 0) = refined_extraction_corners;
     }
@@ -99,8 +98,8 @@ Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::EstimateExtractionCorners(Eigen
     return extraction_corners;
 }
 
-Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::RefineCorners(
-    cv::Mat const& image, Eigen::Matrix<double, 4, 2> const& extraction_corners) {
+Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::RefineCorners(cv::Mat const& image,
+                                                               Eigen::Matrix<double, 4, 2> const& extraction_corners) {
     // NOTE(Jack): Eigen is column major by default, but opencv is row major (like the rest of the world...) so we need
     // to specifically specify Eigen::RowMajor here in order for the cv::Mat view to make sense.
     Eigen::Matrix<float, 4, 2, Eigen::RowMajor> refined_extraction_corners{extraction_corners.cast<float>()};
@@ -112,7 +111,6 @@ Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::RefineCorners(
 
     return refined_extraction_corners.cast<double>();
 }
-
 
 Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points) {
     Eigen::MatrixX2d eigen_points(std::size(points), 2);
