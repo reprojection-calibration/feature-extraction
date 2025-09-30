@@ -49,6 +49,8 @@ std::optional<Eigen::MatrixX2d> CircleGridExtractor::Extract(cv::Mat const& imag
 }
 
 // TODO(Jack): Are we using pattern size here? Or is this just here for fun?
+// WARN(Jack): Use of the tagCustom36h11 and all settings are hardcoded here! This means no on can select another
+// family. Find a way to make this configurable if possible, but it will likely require recompilation.
 AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size)
     : TargetExtractor(pattern_size),
       tag_family_{AprilTagFamily{tagCustom36h11_create(), tagCustom36h11_destroy}},
@@ -79,9 +81,12 @@ std::unique_ptr<TargetExtractor> CreateTargetExtractor(const TargetType type) {
     // TODO(Jack): Add aprilgrid condition!
     if (type == TargetType::Checkerboard) {
         return std::make_unique<CheckerboardExtractor>(pattern_size);
-    } else {
+    } else if (type == TargetType::CircleGrid) {
         bool const asymmetric{false};  // comes from config file in the future
         return std::make_unique<CircleGridExtractor>(pattern_size, asymmetric);
+    } else {
+        // WARN(Jack): Pattern size might not be used
+        return std::make_unique<AprilGrid3Extractor>(pattern_size);
     }
 }
 
