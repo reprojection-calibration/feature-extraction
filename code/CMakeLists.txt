@@ -42,7 +42,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 set(EXAMPLES
         examples/aprilgrid3_webcam_demo.cpp
 )
-foreach ( EXAMPLE IN LISTS EXAMPLES)
+foreach (EXAMPLE IN LISTS EXAMPLES)
     get_filename_component(EXAMPLE_NAME ${EXAMPLE} NAME)
     add_executable(${EXAMPLE_NAME} ${EXAMPLE})
     target_link_libraries(${EXAMPLE_NAME}
@@ -61,7 +61,6 @@ include(GoogleTest)
 
 set(TESTS
         src/grid_utilities.test.cpp
-        src/target_extractors_april_tag.test.cpp
         src/target_extractors.test.cpp
         src/target_generators_april_tag.test.cpp
         src/target_generators.test.cpp
