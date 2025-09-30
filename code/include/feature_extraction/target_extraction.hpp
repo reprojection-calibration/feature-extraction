@@ -5,8 +5,6 @@
 #include <opencv2/opencv.hpp>
 #include <optional>
 
-// TODO(Jack): I think a better name for this file would reflect the fact that we are extracting targets here?
-
 namespace reprojection_calibration::feature_extraction {
 
 class TargetExtractor {

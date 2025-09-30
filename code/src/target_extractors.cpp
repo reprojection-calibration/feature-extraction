@@ -2,12 +2,12 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-// TODO(Jack): Should return optional based on "pattern_found"
-std::optional<Eigen::MatrixX2d> CheckerboardExtractorExtractPixelFeatures(cv::Mat const& image,
-                                                                          cv::Size const pattern_size) {
+CheckerboardExtractor::CheckerboardExtractor(cv::Size const& patern_size) : TargetExtractor(patern_size) {}
+
+std::optional<Eigen::MatrixX2d> CheckerboardExtractor::Extract(cv::Mat const& image) const  {
     std::vector<cv::Point2f> corners;
     bool const pattern_found{cv::findChessboardCorners(
-        image, pattern_size, corners,
+        image, pattern_size_, corners,
         cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK)};
 
     if (not pattern_found) {
@@ -20,26 +20,39 @@ std::optional<Eigen::MatrixX2d> CheckerboardExtractorExtractPixelFeatures(cv::Ma
     return ToEigen(corners);
 }
 
-// TODO(Jack): Should return optional based on "pattern_found"
-std::optional<Eigen::MatrixX2d> CirclegridExtractorExtractPixelFeatures(cv::Mat const& image,
-                                                                        cv::Size const pattern_size,
-                                                                        bool const asymmetric) {
+CircleGridExtractor::CircleGridExtractor(cv::Size const& patern_size, bool const asymmetric)
+    : TargetExtractor(patern_size), asymmetric_{asymmetric} {}
+
+std::optional<Eigen::MatrixX2d> CircleGridExtractor::Extract(cv::Mat const& image) const  {
     // cv::CALIB_CB_CLUSTERING - "uses a special algorithm for grid detection. It is more robust to perspective
-    // distortions but much more sensitive to background clutter." - if I do not use this then I think I need to do some
-    // tuning about what acceptable sizes and spacing are for the circle grid. For now this will do.
-    // TODO(Jack): This is not so clean here because we will have to repeat all options (ex. cv::CALIB_CB_CLUSTERING)
-    // even though those will probably be the same for both cases. Keep your eyes peeled for associated problems!
-    int const extraction_options{asymmetric ? cv::CALIB_CB_CLUSTERING | cv::CALIB_CB_ASYMMETRIC_GRID
-                                            : cv::CALIB_CB_CLUSTERING | cv::CALIB_CB_SYMMETRIC_GRID};
+    // distortions but much more sensitive to background clutter." - if I do not use this then I think I need to do
+    // some tuning about what acceptable sizes and spacing are for the circle grid. For now this will do.
+    // TODO(Jack): This is not so clean here because we will have to repeat all options (ex.
+    // cv::CALIB_CB_CLUSTERING) even though those will probably be the same for both cases. Keep your eyes peeled
+    // for associated problems!
+    int const extraction_options{asymmetric_ ? cv::CALIB_CB_CLUSTERING | cv::CALIB_CB_ASYMMETRIC_GRID
+                                             : cv::CALIB_CB_CLUSTERING | cv::CALIB_CB_SYMMETRIC_GRID};
 
     std::vector<cv::Point2f> corners;
-    bool const pattern_found{cv::findCirclesGrid(image, pattern_size, corners, extraction_options)};
+    bool const pattern_found{cv::findCirclesGrid(image, pattern_size_, corners, extraction_options)};
 
     if (not pattern_found) {
         return std::nullopt;
     }
 
     return ToEigen(corners);
+}
+
+std::unique_ptr<TargetExtractor> CreateTargetExtractor(const TargetType type) {
+    cv::Size const pattern_size{4, 3};  // comes from config file in the future
+
+    // TODO(Jack): Add aprilgrid condition!
+    if (type == TargetType::Checkerboard) {
+        return std::make_unique<CheckerboardExtractor>(pattern_size);
+    } else {
+        bool const asymmetric{false};  // comes from config file in the future
+        return std::make_unique<CircleGridExtractor>(pattern_size, asymmetric);
+    }
 }
 
 Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points) {

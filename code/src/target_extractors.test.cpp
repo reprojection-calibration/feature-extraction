@@ -11,7 +11,9 @@ TEST(TargetExtractors, TestExtractCheckerboardFeatures) {
     int const square_size_pixels{50};
     cv::Mat const image{GenerateCheckerboard(pattern_size, square_size_pixels)};
 
-    std::optional<Eigen::MatrixX2d> const pixels{CheckerboardExtractorExtractPixelFeatures(image, pattern_size)};
+    auto const extractor{CheckerboardExtractor{pattern_size}};
+
+    std::optional<Eigen::MatrixX2d> const pixels{extractor.Extract(image)};
 
     EXPECT_TRUE(pixels.has_value());
     EXPECT_EQ(pixels->rows(), pattern_size.height * pattern_size.width);
@@ -26,7 +28,9 @@ TEST(TargetExtractors, TestExtractCirclegridFeatures) {
     bool const asymmetric{false};
     cv::Mat const image{GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
-    auto const pixels{CirclegridExtractorExtractPixelFeatures(image, pattern_size, asymmetric)};
+    auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
+
+    std::optional<Eigen::MatrixX2d> const pixels{extractor.Extract(image)};
 
     EXPECT_EQ(pixels->rows(), pattern_size.width * pattern_size.height);
     EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{265, 195}.transpose(), 1e-6));  // First pixel - heuristic
@@ -47,7 +51,9 @@ TEST(TargetExtractors, TestExtractCirclegridFeaturesAsymmetric) {
     // WARN(Jack): Violation of principle of least surprise! They count every column but only half the rows (i.e. the
     // ones sticking out on the left side)
     cv::Size const dimension{pattern_size.height / 2, pattern_size.width};
-    auto const pixels{CirclegridExtractorExtractPixelFeatures(image, dimension, true)};
+    auto const extractor{CircleGridExtractor{dimension, asymmetric}};
+
+    std::optional<Eigen::MatrixX2d> const pixels{extractor.Extract(image)};
 
     EXPECT_TRUE(pixels.has_value());
     EXPECT_EQ(pixels->rows(),
