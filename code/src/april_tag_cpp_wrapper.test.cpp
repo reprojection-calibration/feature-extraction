@@ -16,7 +16,7 @@ TEST_F(AprilTagTestFixture, TestAprilTagDetectorDetectAprilBoard) {
     int const num_tags{pattern_size.height * pattern_size.width};
     EXPECT_EQ(std::size(detections), num_tags);
     for (int i = 0; i < num_tags; i++) {
-        EXPECT_EQ(detections[i].id, i);  // AprilBoard3 tag IDs are always generated in order as [0, num_tags)
+        EXPECT_EQ(detections[i].id, i);  // AprilBoard3 tag IDs will always be generated in order as [0, num_tags)
     }
 }
 
