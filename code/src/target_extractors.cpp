@@ -1,10 +1,15 @@
 #include "target_extractors.hpp"
 
+extern "C" {
+
+#include "feature_extraction/generated_apriltag_code/tagCustom36h11.h"
+}
+
 namespace reprojection_calibration::feature_extraction {
 
-CheckerboardExtractor::CheckerboardExtractor(cv::Size const& patern_size) : TargetExtractor(patern_size) {}
+CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size) : TargetExtractor(pattern_size) {}
 
-std::optional<Eigen::MatrixX2d> CheckerboardExtractor::Extract(cv::Mat const& image) const  {
+std::optional<Eigen::MatrixX2d> CheckerboardExtractor::Extract(cv::Mat const& image) const {
     std::vector<cv::Point2f> corners;
     bool const pattern_found{cv::findChessboardCorners(
         image, pattern_size_, corners,
@@ -20,10 +25,10 @@ std::optional<Eigen::MatrixX2d> CheckerboardExtractor::Extract(cv::Mat const& im
     return ToEigen(corners);
 }
 
-CircleGridExtractor::CircleGridExtractor(cv::Size const& patern_size, bool const asymmetric)
-    : TargetExtractor(patern_size), asymmetric_{asymmetric} {}
+CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric)
+    : TargetExtractor(pattern_size), asymmetric_{asymmetric} {}
 
-std::optional<Eigen::MatrixX2d> CircleGridExtractor::Extract(cv::Mat const& image) const  {
+std::optional<Eigen::MatrixX2d> CircleGridExtractor::Extract(cv::Mat const& image) const {
     // cv::CALIB_CB_CLUSTERING - "uses a special algorithm for grid detection. It is more robust to perspective
     // distortions but much more sensitive to background clutter." - if I do not use this then I think I need to do
     // some tuning about what acceptable sizes and spacing are for the circle grid. For now this will do.
@@ -41,6 +46,31 @@ std::optional<Eigen::MatrixX2d> CircleGridExtractor::Extract(cv::Mat const& imag
     }
 
     return ToEigen(corners);
+}
+
+// TODO(Jack): Are we using pattern size here? Or is this just here for fun?
+AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size)
+    : TargetExtractor(pattern_size),
+      tag_family_{AprilTagFamily{tagCustom36h11_create(), tagCustom36h11_destroy}},
+      tag_detector_{AprilTagDetector{tag_family_, {2.0, 0.0, 1, false, false}}} {}
+
+std::optional<Eigen::MatrixX2d> AprilGrid3Extractor::Extract(cv::Mat const& image) const {
+    std::vector<AprilTagDetection> const raw_detections{tag_detector_.Detect(image)};
+    if (std::size(raw_detections) == 0) {
+        return std::nullopt;
+    }
+
+    Eigen::MatrixX2d points{4 * std::size(raw_detections), 2};
+    for (size_t i{0}; i < std::size(raw_detections); ++i) {
+        Eigen::Matrix<double, 4, 2> const extraction_corners{
+            EstimateExtractionCorners(raw_detections[i].H, std::sqrt(tag_family_.tag_family->nbits))};
+        Eigen::Matrix<double, 4, 2> const refined_extraction_corners{
+            RefineExtractionCorners(image, extraction_corners)};
+
+        points.block<4, 2>(4 * i, 0) = refined_extraction_corners;
+    }
+
+    return points;
 }
 
 std::unique_ptr<TargetExtractor> CreateTargetExtractor(const TargetType type) {
