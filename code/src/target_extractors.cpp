@@ -4,6 +4,8 @@ extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
 }
 
+#include "eigen_utilities.hpp"
+
 namespace reprojection_calibration::feature_extraction {
 
 CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size) : TargetExtractor(pattern_size) {}
@@ -110,16 +112,6 @@ Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::RefineCorners(cv::Mat const& im
                      cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
 
     return refined_extraction_corners.cast<double>();
-}
-
-Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points) {
-    Eigen::MatrixX2d eigen_points(std::size(points), 2);
-    for (Eigen::Index i = 0; i < eigen_points.rows(); i++) {
-        eigen_points.row(i)[0] = points[i].x;
-        eigen_points.row(i)[1] = points[i].y;
-    }
-
-    return eigen_points;
 }
 
 }  // namespace reprojection_calibration::feature_extraction

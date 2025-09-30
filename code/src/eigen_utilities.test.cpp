@@ -1,6 +1,6 @@
-#include "grid_utilities.hpp"
-
 #include <gtest/gtest.h>
+
+#include "eigen_utilities.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
 

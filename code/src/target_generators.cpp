@@ -1,6 +1,6 @@
 #include "target_generators.hpp"
 
-#include "grid_utilities.hpp"
+#include "eigen_utilities.hpp"
 
 namespace reprojection_calibration::feature_extraction {
 

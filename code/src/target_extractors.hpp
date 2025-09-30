@@ -42,7 +42,4 @@ class AprilGrid3Extractor : public TargetExtractor {
     AprilTagDetector tag_detector_;
 };
 
-// TODO(Jack): Put in helper file if better organized there
-Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points);
-
 }  // namespace reprojection_calibration::feature_extraction
