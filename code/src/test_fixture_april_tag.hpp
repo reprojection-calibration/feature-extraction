@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "april_tag_cpp_wrapper.hpp"
-#include "target_generators_april_tag.hpp"
+#include "target_generators.hpp"
 
 extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
