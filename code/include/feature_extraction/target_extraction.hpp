@@ -11,9 +11,9 @@ class TargetExtractor {
    public:
     TargetExtractor(cv::Size const& pattern_size) : pattern_size_{pattern_size} {}
 
-    virtual ~TargetExtractor() {}
+    virtual ~TargetExtractor() = default;
 
-    // NOTE(Jack): In the future this will return a more complex data type that fully describes the
+    // NOTE(Jack): In the future this will return a more complex data type that fully describes the target detection
     virtual std::optional<Eigen::MatrixX2d> Extract(cv::Mat const& image) const = 0;
 
    protected:

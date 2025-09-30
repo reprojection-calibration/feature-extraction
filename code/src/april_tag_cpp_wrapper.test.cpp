@@ -1,48 +1,29 @@
-
 #include "april_tag_cpp_wrapper.hpp"
 
 #include <gtest/gtest.h>
 
-#include "target_generators_april_tag.hpp"
-
-extern "C" {
-#include "generated_apriltag_code/tagCustom36h11.h"
-}
+#include "test_fixture_april_tag.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
 
-TEST(AprilTagCppWrapper, TestAprilTagDetectorDetectAprilBoard) {
-    // Setup detector
-    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    AprilTagDetector const tag_detector{tag_family_handler, {2.0, 0.0, 1, false, false}};
-
-    // Setup input data
-    int const bit_size_pixel{10};
+TEST_F(AprilTagTestFixture, TestAprilTagDetectorDetectAprilBoard) {
     cv::Size const pattern_size{4, 3};
-    cv::Mat const april_board{GenerateAprilBoard(tag_family_handler.tag_family->nbits,
-                                                 tag_family_handler.tag_family->codes, bit_size_pixel, pattern_size)};
+    cv::Mat const april_board{AprilBoard3Generation::GenerateBoard(
+        tag_family_handler_.tag_family->nbits, tag_family_handler_.tag_family->codes, bit_size_pixel_, pattern_size)};
 
-    // Act
-    std::vector<AprilTagDetection> const detections{tag_detector.Detect(april_board)};
+    std::vector<AprilTagDetection> const detections{tag_detector_.Detect(april_board)};
 
-    // Assert
     int const num_tags{pattern_size.height * pattern_size.width};
     EXPECT_EQ(std::size(detections), num_tags);
     for (int i = 0; i < num_tags; i++) {
-        EXPECT_EQ(detections[i].id, i);  // AprilBoard3 tag IDs are always generated in order as [0, num_tags)
+        EXPECT_EQ(detections[i].id, i);  // AprilBoard3 tag IDs will always be generated in order as [0, num_tags)
     }
 }
 
-TEST(AprilTagCppWrapper, TestAprilTagDetectorDetectAprilTag) {
-    AprilTagFamily const tag_family_handler{tagCustom36h11_create(), tagCustom36h11_destroy};
-    AprilTagDetector const tag_detector{tag_family_handler, {2.0, 0.0, 1, false, false}};
+TEST_F(AprilTagTestFixture, TestAprilTagDetectorDetectAprilTag) {
+    cv::Mat const april_tag{AprilBoard3Generation::GenerateTag(bit_size_pixel_, code_matrix_0_)};
 
-    Eigen::MatrixXi const code_matrix{
-        CalculateCodeMatrix(tag_family_handler.tag_family->nbits, tag_family_handler.tag_family->codes[0])};
-    int const bit_size_pixel{10};
-    cv::Mat const april_tag{GenerateAprilTag(bit_size_pixel, code_matrix)};
-
-    std::vector<AprilTagDetection> const detections{tag_detector.Detect(april_tag)};
+    std::vector<AprilTagDetection> const detections{tag_detector_.Detect(april_tag)};
     EXPECT_EQ(std::size(detections), 1);
 
     AprilTagDetection const detection{detections[0]};

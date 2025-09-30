@@ -1,4 +1,4 @@
-#include "grid_utilities.hpp"
+#include "eigen_utilities.hpp"
 
 #include <gtest/gtest.h>
 
