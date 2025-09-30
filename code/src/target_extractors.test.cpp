@@ -64,7 +64,7 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
 }
 
 TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
-    cv::Mat const april_tag{AprilBoard3Generation::GenerateAprilTag(bit_size_pixel_, code_matrix_0_)};
+    cv::Mat const april_tag{AprilBoard3Generation::GenerateTag(bit_size_pixel_, code_matrix_0_)};
 
     cv::Size const pattern_size{4, 3};  // WARN(Jack): Not actually needed here yet
     auto const extractor{AprilGrid3Extractor{pattern_size}};

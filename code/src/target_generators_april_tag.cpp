@@ -4,8 +4,8 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-cv::Mat AprilBoard3Generation::GenerateAprilBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
-                           cv::Size const& pattern_size) {
+cv::Mat AprilBoard3Generation::GenerateBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
+                                             cv::Size const& pattern_size) {
     int const april_tag_size_pixels{
         (8 * bit_size_pixels) +
         (static_cast<int>(std::sqrt(num_bits)) * bit_size_pixels)};  // Fixed border width plus dynamic data area size
@@ -19,7 +19,7 @@ cv::Mat AprilBoard3Generation::GenerateAprilBoard(int const num_bits, uint64_t c
 
         // Generate the tag
         uint64_t const tag_code_i{tag_family[(indices(0) * pattern_size.width) + indices(1)]};
-        cv::Mat const april_tag_i{GenerateAprilTag(num_bits, tag_code_i, bit_size_pixels)};
+        cv::Mat const april_tag_i{GenerateTag(num_bits, tag_code_i, bit_size_pixels)};
 
         // Place the tag on the board
         cv::Point const top_left_corner{(april_tag_size_pixels * indices(1)), (april_tag_size_pixels * indices(0))};
@@ -32,13 +32,13 @@ cv::Mat AprilBoard3Generation::GenerateAprilBoard(int const num_bits, uint64_t c
     return april_board;
 }
 
-cv::Mat AprilBoard3Generation::GenerateAprilTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixels) {
-    Eigen::MatrixXi const code_matrix{CalculateCodeMatrix(num_bits, tag_code)};
+cv::Mat AprilBoard3Generation::GenerateTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixels) {
+    Eigen::MatrixXi const code_matrix{GenerateCodeMatrix(num_bits, tag_code)};
 
-    return GenerateAprilTag(bit_size_pixels, code_matrix);
+    return GenerateTag(bit_size_pixels, code_matrix);
 }
 
-cv::Mat AprilBoard3Generation::GenerateAprilTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix) {
+cv::Mat AprilBoard3Generation::GenerateTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix) {
     int const border_thickness_pixels{
         4 * bit_size_pixels};  // Three mainly white rings and one black ring. This is an intrinsic property
                                // of the tags in our proposed AprilBoard3 design.
@@ -99,7 +99,7 @@ cv::Mat AprilBoard3Generation::GenerateAprilTag(int const bit_size_pixels, Eigen
 // We simplify the implementation a little bit here because we assume that AprilBoard3 tag structure will always be the
 // same, therefore we only duplicate the actual data code area generation part here. A complete implementation of april
 // tag generation is not found here! Please see the original AprilRobotics repository for that.
-Eigen::MatrixXi AprilBoard3Generation::CalculateCodeMatrix(int const num_bits, uint64_t tag_code) {
+Eigen::MatrixXi AprilBoard3Generation::GenerateCodeMatrix(int const num_bits, uint64_t tag_code) {
     int const sqrt_num_bits{static_cast<int>(std::sqrt(num_bits))};  // Only allow square data encoding areas
 
     // TODO(Jack): Is there a hard reason that we need to do this by generating each quadrant and then rotating 90
