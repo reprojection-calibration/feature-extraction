@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
-#include "april_tag_test_fixture.hpp"
 #include "target_generators.hpp"
+#include "test_fixture_april_tag.hpp"
 
 using namespace reprojection_calibration::feature_extraction;
 

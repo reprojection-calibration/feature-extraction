@@ -18,6 +18,7 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(SRC_FILES
+        src/april_tag_cpp_wrapper.cpp
         src/generated_apriltag_code/tagCustom36h11.c
         src/grid_utilities.cpp
         src/target_extraction.cpp
