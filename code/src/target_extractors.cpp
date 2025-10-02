@@ -1,5 +1,7 @@
 #include "target_extractors.hpp"
 
+#include <iostream>
+
 extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
 }
@@ -115,22 +117,31 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
     return FeatureFrame{corners, point_indices};
 }
 
-
+// TODO(Jack): This is not a very eloquent implementation, but its gets the job done for now and the tests pass!
 Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
                                                    std::vector<AprilTagDetection> const& detections) {
     // NOTE(Jack): Multiplied by two because every tag has four corners/points/pixels (two in each direction)
     Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
 
-    // TODO(Jack): The logic in this method about indicing and masking is very similar to the code in the eigen utility
+    // TODO(Jack): The logic in this method about indicing and masking is similar to the code in the eigen utility
     // MaskIndices, keep your eyes peeled for optimization or code/idea reuse
     std::vector<int> mask_vec;
     mask_vec.reserve(grid.rows());
     for (auto const& detection : detections) {
         // WARN(Jack): THIS WILL ASSUME WE ARE ALWAYS STARTING from a tag ID of zero
-        for (int i{0}; i < 4; ++i) {
-            int const corner_id{(4 * detection.id) + i};
-            mask_vec.push_back(corner_id);
-        }
+        int const i{static_cast<int>(detection.id / pattern_size.width)};
+        int const j{detection.id % pattern_size.width};
+
+        // TODO(Jack): Align my imagintation of the order and indices of the corners with the april tag implementation
+        int const corner_0{(2 * (2 * i) * pattern_size.width) + (2 * j)};
+        int const corner_1{corner_0 + 1};
+        int const corner_2{corner_0 + (2 * pattern_size.width)};
+        int const corner_3{corner_2 + 1};
+
+        mask_vec.push_back(corner_0);
+        mask_vec.push_back(corner_1);
+        mask_vec.push_back(corner_2);
+        mask_vec.push_back(corner_3);
     }
 
     // COPY AND PASTED FROM EIGEN UTILTIES MASK FUNCTION
