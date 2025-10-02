@@ -20,7 +20,7 @@ find_package(OpenCV REQUIRED)
 set(SRC_FILES
         src/april_tag_cpp_wrapper.cpp
         src/generated_apriltag_code/tagCustom36h11.c
-        src/eigen_utilities.cpp
+        src/utilities.cpp
         src/target_extraction.cpp
         src/target_extractors.cpp
         src/target_generators.cpp
@@ -70,10 +70,10 @@ include(GoogleTest)
 
 set(TESTS
         src/april_tag_cpp_wrapper.test.cpp
-        src/eigen_utilities.test.cpp
         src/target_extractors.test.cpp
         src/target_generators.test.cpp
         test/target_extraction.test.cpp
+        src/utilities.test.cpp
 )
 foreach (TEST IN LISTS TESTS)
     get_filename_component(TEST_NAME ${TEST} NAME)

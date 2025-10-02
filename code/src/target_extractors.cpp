@@ -6,7 +6,7 @@ extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
 }
 
-#include "eigen_utilities.hpp"
+#include "utilities.hpp"
 
 namespace reprojection_calibration::feature_extraction {
 
@@ -135,17 +135,10 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
     return indices(mask, Eigen::all);
 }
 
-// WHERE ON EARTH SHOULD I PUT THIS FUNCTION
-double AlternatingSum(int const n, double const increment_1, double const increment_2) {
-    double sum{0};
-    for (int i{0}; i < n; ++i) {
-        sum += (i % 2 == 0) ? increment_1 : increment_2;
-    }
 
-    return sum;
-}
 
-Eigen::MatrixX2d AprilGrid3Extractor::WhatTheHellDoINameThis(Eigen::ArrayX2i const& indices, double const unit_dimension) {
+Eigen::MatrixX2d AprilGrid3Extractor::WhatTheHellDoINameThis(Eigen::ArrayX2i const& indices,
+                                                             double const unit_dimension) {
     Eigen::MatrixX2d points{indices.rows(), 2};
 
     for (int i{0}; i < indices.rows(); ++i) {

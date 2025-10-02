@@ -2,9 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#include "eigen_utilities.hpp"  // REMOVE
 #include "target_generators.hpp"
 #include "test_fixture_april_tag.hpp"
+#include "utilities.hpp"  // REMOVE
 
 using namespace reprojection_calibration::feature_extraction;
 

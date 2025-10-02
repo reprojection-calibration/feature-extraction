@@ -1,6 +1,6 @@
-#include "eigen_utilities.hpp"
+#include "utilities.hpp"
 
-#include <numeric>
+#include <vector>
 
 namespace reprojection_calibration::feature_extraction {
 
@@ -52,6 +52,15 @@ Eigen::ArrayXi MaskIndices(Eigen::ArrayXi const& array) {
     }
 
     return ToEigen(mask);
+}
+
+double AlternatingSum(int const n, double const increment_1, double const increment_2) {
+    double sum{0};
+    for (int i{0}; i < n; ++i) {
+        sum += (i % 2 == 0) ? increment_1 : increment_2;
+    }
+
+    return sum;
 }
 
 }  // namespace reprojection_calibration::feature_extraction
