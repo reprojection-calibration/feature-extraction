@@ -15,8 +15,7 @@ CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, const
       point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)},
       points_{point_indices_.rows(), 3} {
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
-    points_.col(2).setZero();
-    ;  // Flat on calibration board, z=0.
+    points_.col(2).setZero();  // Flat on calibration board, z=0.
 }
 
 std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image) const {
@@ -49,7 +48,6 @@ CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const dou
     points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
     points_.col(2).setZero();
-    ;
 }
 
 std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) const {
@@ -85,11 +83,9 @@ std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) c
 AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size, const double unit_dimension)
     : TargetExtractor(pattern_size, unit_dimension),
       tag_family_{AprilTagFamily{tagCustom36h11_create(), tagCustom36h11_destroy}},
-      tag_detector_{AprilTagDetector{tag_family_, {2.0, 0.0, 1, false, false}}} {
-    // TODO(Jack): Consider putting into initializer list
-    point_indices_ = GenerateGridIndices(2 * pattern_size_.height, 2 * pattern_size_.width);
-    points_ = CornerPositions(point_indices_, unit_dimension);
-}
+      tag_detector_{AprilTagDetector{tag_family_, {2.0, 0.0, 1, false, false}}},
+      point_indices_{GenerateGridIndices(2 * pattern_size_.height, 2 * pattern_size_.width)},
+      points_{CornerPositions(point_indices_, unit_dimension)} {}
 
 std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) const {
     std::vector<AprilTagDetection> const raw_detections{tag_detector_.Detect(image)};
