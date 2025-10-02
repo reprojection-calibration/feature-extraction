@@ -49,12 +49,8 @@ cv::Mat GenerateCircleGrid(cv::Size const& pattern_size, int const circle_radius
                     white_space_border};
     cv::Mat circlgrid{255 * cv::Mat::ones(height, width, CV_8UC1)};
 
-    Eigen::ArrayX2i grid;
-    if (asymmetric) {
-        grid = GenerateGridIndices(pattern_size.height, pattern_size.width, true);
-    } else {
-        grid = GenerateGridIndices(pattern_size.height, pattern_size.width, false);
-    }
+    Eigen::ArrayX2i const grid{asymmetric ? GenerateGridIndices(pattern_size.height, pattern_size.width, true)
+                                          : GenerateGridIndices(pattern_size.height, pattern_size.width, false)};
 
     for (Eigen::Index i{0}; i < grid.rows(); ++i) {
         Eigen::Array2i const indices{grid.row(i)};
