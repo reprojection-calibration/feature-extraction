@@ -44,6 +44,9 @@ class AprilGrid3Extractor : public TargetExtractor {
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
+    // WARN(Jack): The corner indices as labeled here to not logically match the order of how they are extracted. You
+    // can see this when running the live demo that the indices do not show up in the expected logical row and column
+    // order.
     static Eigen::ArrayX2i CornerIndices(cv::Size const& pattern_size,
                                          std::vector<AprilTagDetection> const& detections);
 
