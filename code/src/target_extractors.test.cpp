@@ -115,11 +115,20 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
                                                 {19.819417953491211, 119.27910614013672},
                                                 {119.13014984130859, 119.13014984130859}};
     EXPECT_TRUE(pixels.isApprox(gt_pixels, 1e-6));
+
+    Eigen::MatrixX3d const& points{target->points};
+    Eigen::Matrix<double, 4, 3> const gt_points{{0, 0, 0}, {0.5, 0, 0}, {0, 0.5, 0}, {0.5, 0.5, 0}};
+    EXPECT_TRUE(points.isApprox(gt_points));
+
+    Eigen::ArrayX2i const& indices{target->indices};
+    Eigen::Array<int, 4, 2> const gt_indices{{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+    EXPECT_TRUE(indices.isApprox(gt_indices));
 }
 
-TEST_F(AprilTagTestFixture, TestAprilGrid3ExtractorCornerIndices) {
+TEST_F(AprilTagTestFixture, TestAprilGrid3VisibleGeometry) {
     cv::Size const pattern_size{3, 2};
 
+    // Make a simulated set of detections from a 3x2 AprilGrid3 - we only need the ID here
     std::vector<AprilTagDetection> detections;
     for (int i{0}; i < pattern_size.width * pattern_size.height; ++i) {
         AprilTagDetection detection_i;
@@ -127,29 +136,18 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3ExtractorCornerIndices) {
         detections.push_back(detection_i);
     }
 
-    double const unit_dimension{0.5};
-    auto const [corner_indices1,
-                corners1]{AprilGrid3Extractor::VisibleGeometry(pattern_size, unit_dimension, detections)};
-    EXPECT_EQ(corner_indices1.rows(), 4 * pattern_size.width * pattern_size.height);
-    EXPECT_TRUE(corner_indices1.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));
-    EXPECT_TRUE(corner_indices1.row(23).isApprox(Eigen::Vector2i{3, 5}.transpose()));
+    Eigen::ArrayXi const mask1{AprilGrid3Extractor::VisibleGeometry(pattern_size, detections)};
+    EXPECT_EQ(mask1.rows(), 4 * pattern_size.width * pattern_size.height);
+    EXPECT_TRUE(mask1.topRows(4).isApprox(Eigen::Array<int, 4, 1>{0, 1, 6, 7}));
+    EXPECT_TRUE(mask1.bottomRows(4).isApprox(Eigen::Array<int, 4, 1>{16, 17, 22, 23}));
 
-    EXPECT_EQ(corners1.rows(), 4 * pattern_size.width * pattern_size.height);
-    EXPECT_TRUE(corners1.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
-    EXPECT_TRUE(corners1.row(23).isApprox(Eigen::Vector3d{1.9, 1.2, 0}.transpose()));
-
-    // Now remove the first tag detection and see that it still "works"
+    // Now remove the first tag detection and see that it still works
     detections.erase(std::begin(detections));
 
-    auto const [corner_indices2,
-                corners2]{AprilGrid3Extractor::VisibleGeometry(pattern_size, unit_dimension, detections)};
-    EXPECT_EQ(corner_indices2.rows(), 4 * (pattern_size.width * pattern_size.height - 1));
-    EXPECT_TRUE(corner_indices2.row(0).isApprox(Eigen::Vector2i{0, 2}.transpose()));
-    EXPECT_TRUE(corner_indices2.row(19).isApprox(Eigen::Vector2i{3, 5}.transpose()));
-
-    EXPECT_EQ(corners2.rows(), 4 * (pattern_size.width * pattern_size.height - 1));
-    EXPECT_TRUE(corners2.row(0).isApprox(Eigen::Vector3d{0.7, 0, 0}.transpose()));
-    EXPECT_TRUE(corners2.row(19).isApprox(Eigen::Vector3d{1.9, 1.2, 0}.transpose()));
+    Eigen::ArrayXi const mask2{AprilGrid3Extractor::VisibleGeometry(pattern_size, detections)};
+    EXPECT_EQ(mask2.rows(), 4 * (pattern_size.width * pattern_size.height - 1));  // Four fewer elements
+    EXPECT_TRUE(mask2.topRows(4).isApprox(Eigen::Array<int, 4, 1>{2, 3, 8, 9}));  // Moved one tag over along the row
+    EXPECT_TRUE(mask2.bottomRows(4).isApprox(Eigen::Array<int, 4, 1>{16, 17, 22, 23}));  // Same as before removal
 }
 
 TEST_F(AprilTagTestFixture, TestAprilGrid3CornerPositions) {
