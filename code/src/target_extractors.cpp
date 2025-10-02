@@ -135,6 +135,30 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
     return indices(mask, Eigen::all);
 }
 
+// WHERE ON EARTH SHOULD I PUT THIS FUNCTION
+double AlternatingSum(int const n, double const increment_1, double const increment_2) {
+    double sum{0};
+    for (int i{0}; i < n; ++i) {
+        sum += (i % 2 == 0) ? increment_1 : increment_2;
+    }
+
+    return sum;
+}
+
+Eigen::MatrixX2d AprilGrid3Extractor::WhatTheHellDoINameThis(Eigen::ArrayX2i const& indices, double const unit_dimension) {
+    Eigen::MatrixX2d points{indices.rows(), 2};
+
+    for (int i{0}; i < indices.rows(); ++i) {
+        Eigen::Array2i const indices_i{indices.row(i)};
+
+        // WARN(Jack): If we change the pattern (num_bits or design) then this 0.4 (4bits/10bits) will change!
+        points.row(i)(0) = AlternatingSum(indices_i(1), unit_dimension, 0.4 * unit_dimension);
+        points.row(i)(1) = AlternatingSum(indices_i(0), unit_dimension, 0.4 * unit_dimension);
+    }
+
+    return points;
+}
+
 // From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
 //
 //      The 3x3 homography matrix describing the projection from an "ideal" tag (with corners at (-1,1), (1,1), (1,-1),
