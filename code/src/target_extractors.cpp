@@ -130,9 +130,9 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
     }
     Eigen::ArrayXi const mask{ToEigen(mask_vec)};
 
-    Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
+    Eigen::ArrayX2i const indices{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
 
-    return grid(mask, Eigen::all);
+    return indices(mask, Eigen::all);
 }
 
 // From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
