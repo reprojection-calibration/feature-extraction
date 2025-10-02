@@ -35,7 +35,7 @@ struct AprilTagDetection {
 
     explicit AprilTagDetection(apriltag_detection_t const& raw_detection);
 
-    int id;
+    int id{};
     Eigen::Matrix3d H;
     Eigen::Vector2d c;
     Eigen::Matrix<double, 4, 2> p;
