@@ -10,8 +10,9 @@ extern "C" {
 
 namespace reprojection_calibration::feature_extraction {
 
-CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size)
-    : TargetExtractor(pattern_size), point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)} {}
+CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, const double unit_dimension)
+    : TargetExtractor(pattern_size, unit_dimension),
+      point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)} {}
 
 std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image) const {
     std::vector<cv::Point2f> corners;
@@ -29,8 +30,9 @@ std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image)
     return FeatureFrame{ToEigen(corners), point_indices_};
 }
 
-CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric)
-    : TargetExtractor(pattern_size), asymmetric_{asymmetric} {
+CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const double unit_dimension,
+                                         bool const asymmetric)
+    : TargetExtractor(pattern_size, unit_dimension), asymmetric_{asymmetric} {
     if (asymmetric_) {
         // NOTE(Jack): We reverse the order of the width and height here for the asymmetric case! Why that is... you
         // tell me boss...
@@ -70,8 +72,8 @@ std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) c
 
 // NOTE(Jack): Use of the tagCustom36h11 and all settings are hardcoded here! This means no on can select another
 // family. Find a way to make this configurable if possible, but it will likely require recompilation.
-AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size)
-    : TargetExtractor(pattern_size),
+AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size, const double unit_dimension)
+    : TargetExtractor(pattern_size, unit_dimension),
       tag_family_{AprilTagFamily{tagCustom36h11_create(), tagCustom36h11_destroy}},
       tag_detector_{AprilTagDetector{tag_family_, {2.0, 0.0, 1, false, false}}} {}
 

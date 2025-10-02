@@ -11,28 +11,30 @@ namespace reprojection_calibration::feature_extraction {
 
 class CheckerboardExtractor : public TargetExtractor {
    public:
-    explicit CheckerboardExtractor(cv::Size const& pattern_size);
+    explicit CheckerboardExtractor(cv::Size const& pattern_size, double const unit_dimension);
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
    private:
     Eigen::ArrayX2i point_indices_;
+    Eigen::ArrayX3d points_;
 };
 
 class CircleGridExtractor : public TargetExtractor {
    public:
-    CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric);
+    CircleGridExtractor(cv::Size const& pattern_size, double const unit_dimension, bool const asymmetric);
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
    private:
     bool asymmetric_;
     Eigen::ArrayX2i point_indices_;
+    Eigen::ArrayX3d points_;
 };
 
 class AprilGrid3Extractor : public TargetExtractor {
    public:
-    explicit AprilGrid3Extractor(cv::Size const& pattern_size);
+    explicit AprilGrid3Extractor(cv::Size const& pattern_size, double const unit_dimension);
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 

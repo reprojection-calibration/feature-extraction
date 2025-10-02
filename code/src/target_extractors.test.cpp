@@ -13,7 +13,8 @@ TEST(TargetExtractors, TestCheckerboardExtractor) {
     int const square_size_pixels{50};
     cv::Mat const image{GenerateCheckerboard(pattern_size, square_size_pixels)};
 
-    auto const extractor{CheckerboardExtractor{pattern_size}};
+    double const unit_dimension{0.5};
+    auto const extractor{CheckerboardExtractor{pattern_size, unit_dimension}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
     ASSERT_TRUE(target.has_value());
@@ -36,7 +37,8 @@ TEST(TargetExtractors, TestCircleGridExtractor) {
     bool const asymmetric{false};
     cv::Mat const image{GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
-    auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
+    double const unit_dimension{0.5};
+    auto const extractor{CircleGridExtractor{pattern_size, unit_dimension, asymmetric}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
     ASSERT_TRUE(target.has_value());
@@ -63,7 +65,8 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
     bool const asymmetric{true};
     cv::Mat image{GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
-    auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
+    double const unit_dimension{0.5};
+    auto const extractor{CircleGridExtractor{pattern_size, unit_dimension, asymmetric}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
     ASSERT_TRUE(target.has_value());
@@ -84,7 +87,8 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
     cv::Mat const april_tag{AprilBoard3Generation::GenerateTag(bit_size_pixel_, code_matrix_0_)};
 
     cv::Size const pattern_size{4, 3};
-    auto const extractor{AprilGrid3Extractor{pattern_size}};
+    double const unit_dimension{0.5};
+    auto const extractor{AprilGrid3Extractor{pattern_size, unit_dimension}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(april_tag)};
     ASSERT_TRUE(target.has_value());

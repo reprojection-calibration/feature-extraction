@@ -15,7 +15,8 @@ struct FeatureFrame {
 
 class TargetExtractor {
    public:
-    TargetExtractor(cv::Size const& pattern_size) : pattern_size_{pattern_size} {}
+    TargetExtractor(cv::Size const& pattern_size, const double unit_dimension)
+        : pattern_size_{pattern_size}, unit_dimension_{unit_dimension} {}
 
     virtual ~TargetExtractor() = default;
 
@@ -24,6 +25,7 @@ class TargetExtractor {
 
    protected:
     cv::Size pattern_size_;
+    double unit_dimension_;
 };
 
 enum class TargetType { Checkerboard, CircleGrid, AprilGrid3 };
