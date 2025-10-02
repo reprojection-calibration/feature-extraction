@@ -16,7 +16,7 @@ TEST(TargetExtractors, TestCheckerboardExtractor) {
 
     std::optional<Eigen::MatrixX2d> const pixels{extractor.Extract(image)};
 
-    EXPECT_TRUE(pixels.has_value());
+    ASSERT_TRUE(pixels.has_value());
     EXPECT_EQ(pixels->rows(), pattern_size.height * pattern_size.width);
     EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{100, 100}.transpose(), 1e-6));   // First pixel - heuristic
     EXPECT_TRUE(pixels->row(11).isApprox(Eigen::Vector2d{250, 200}.transpose(), 1e-6));  // Last pixel - heuristic
@@ -47,13 +47,13 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
     int const circle_radius_pixels{25};
     int const circle_spacing_pixels{20};
     bool const asymmetric{true};
-    cv::Mat const image{GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
+    cv::Mat image{GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
     auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
 
     std::optional<Eigen::MatrixX2d> const pixels{extractor.Extract(image)};
 
-    EXPECT_TRUE(pixels.has_value());
+    ASSERT_TRUE(pixels.has_value());
     EXPECT_EQ(pixels->rows(),
               (pattern_size.width * pattern_size.height) / 2);  // NOTE(Jack): Divide by two due to asymmetry!
     EXPECT_TRUE(pixels->row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));   // First pixel - heuristic
@@ -68,7 +68,7 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
 
     std::optional<Eigen::MatrixX2d> const pixels{extractor.Extract(april_tag)};
 
-    EXPECT_TRUE(pixels.has_value());
+    ASSERT_TRUE(pixels.has_value());
     EXPECT_EQ(pixels->rows(), 4);  // One tag
 
     Eigen::Matrix<double, 4, 2> const gt_pixels{{19.819417953491211, 119.27910614013672},
