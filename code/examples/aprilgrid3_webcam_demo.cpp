@@ -23,11 +23,18 @@ int main() {
         cap >> frame;
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-        std::optional<Eigen::MatrixX2d> const pixels{extractor->Extract(gray)};
-        if (pixels.has_value()) {
-            for (Eigen::Index i{0}; i < pixels.value().rows(); ++i) {
-                cv::circle(frame, cv::Point(pixels.value().row(i)[0], pixels.value().row(i)[1]), 1,
-                           cv::Scalar(0, 255, 0), 5, cv::LINE_8);
+        std::optional<FeatureFrame> const target{extractor->Extract(gray)};
+        if (target.has_value()) {
+            Eigen::MatrixX2d const& pixels{target.value().pixels};
+            Eigen::ArrayX2i const& indices{target.value().indices};
+            for (Eigen::Index i{0}; i < pixels.rows(); ++i) {
+                cv::circle(frame, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), 1, cv::Scalar(0, 255, 0), 5,
+                           cv::LINE_8);
+
+                std::string const text{"(" + std::to_string(indices.row(i)[0]) + ", " +
+                                       std::to_string(indices.row(i)[1]) + ")"};
+                cv::putText(frame, text, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), cv::FONT_HERSHEY_COMPLEX, 0.5,
+                            cv::Scalar(255, 255, 255), 1);
             }
         }
 
