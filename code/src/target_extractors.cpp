@@ -110,11 +110,8 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
         corners.block<4, 2>(4 * i, 0) = refined_extraction_corners;
     }
 
-    // TODO MAKE PART OF CLASS WITH IMPLEMENTATION!!!! PLACEHOLDER FOR NOW
-    Eigen::ArrayX2i const point_indices{GenerateGridIndices(pattern_size_.height, pattern_size_.width)};
-
     // TODO(Jack): Make corner and point naming consistent!
-    return FeatureFrame{corners, point_indices};
+    return FeatureFrame{corners, CornerIndices(pattern_size_, raw_detections)};
 }
 
 // TODO(Jack): This is not a very eloquent implementation, but its gets the job done for now and the tests pass!
