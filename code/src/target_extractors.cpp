@@ -15,7 +15,8 @@ CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, const
       point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)},
       points_{point_indices_.rows(), 3} {
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
-    points_.col(2).setZero();;  // Flat on calibration board, z=0.
+    points_.col(2).setZero();
+    ;  // Flat on calibration board, z=0.
 }
 
 std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image) const {
@@ -47,7 +48,8 @@ CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const dou
 
     points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
-    points_.col(2).setZero();;
+    points_.col(2).setZero();
+    ;
 }
 
 std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) const {
@@ -102,17 +104,17 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
         corners.block<4, 2>(4 * i, 0) = refined_extraction_corners;
     }
 
-    // TODO ACTUALLY CALCULATE
-    Eigen::MatrixX3d points;
+    auto const [corner_indices,
+                points]{AprilGrid3Extractor::VisibleGeometry(pattern_size_, unit_dimension_, raw_detections)};
 
     // TODO(Jack): Make corner and point naming consistent!
-    return FeatureFrame{corners, points, CornerIndices(pattern_size_, raw_detections)};
+    return FeatureFrame{corners, points, corner_indices};
 }
 
 // TODO(Jack): This is not a very eloquent implementation... If there is a way to do this using some more expressive
 // matrix math or simple indexing lets do that :)
-Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
-                                                   std::vector<AprilTagDetection> const& detections) {
+std::tuple<Eigen::ArrayX2i, Eigen::MatrixX3d> AprilGrid3Extractor::VisibleGeometry(
+    cv::Size const& pattern_size, double const unit_dimension, std::vector<AprilTagDetection> const& detections) {
     std::vector<int> mask_vec;
     for (auto const& detection : detections) {
         int const i{static_cast<int>(detection.id / pattern_size.width)};
@@ -130,9 +132,13 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
     }
     Eigen::ArrayXi const mask{ToEigen(mask_vec)};
 
+    // TODO(Jack): The grid here and its corner positions are actually known during construction  - it is only the mask
+    // that needs to be dynamically calculated and applied! This entire logic and grouping can be more clearly organized
+    // and be made more similar to the checkerboard and circlegrid cases.
     Eigen::ArrayX2i const indices{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
+    Eigen::MatrixX3d const corner_positions{CornerPositions(indices, unit_dimension)};
 
-    return indices(mask, Eigen::all);
+    return {indices(mask, Eigen::all), corner_positions(mask, Eigen::all)};
 }
 
 Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension) {
