@@ -117,7 +117,6 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
 // TODO(Jack): This is not a very eloquent implementation, but its gets the job done for now and the tests pass!
 Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
                                                    std::vector<AprilTagDetection> const& detections) {
-    // NOTE(Jack): Multiplied by two because every tag has four corners/points/pixels (two in each direction)
     Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
 
     // TODO(Jack): The logic in this method about indicing and masking is similar to the code in the eigen utility
@@ -125,7 +124,6 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
     std::vector<int> mask_vec;
     mask_vec.reserve(grid.rows());
     for (auto const& detection : detections) {
-        // WARN(Jack): THIS WILL ASSUME WE ARE ALWAYS STARTING from a tag ID of zero
         int const i{static_cast<int>(detection.id / pattern_size.width)};
         int const j{detection.id % pattern_size.width};
 
@@ -141,9 +139,7 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
         mask_vec.push_back(corner_3);
     }
 
-    // COPY AND PASTED FROM EIGEN UTILTIES MASK FUNCTION
-    Eigen::ArrayXi mask(std::size(mask_vec));
-    mask = Eigen::Map<Eigen::ArrayXi>(mask_vec.data(), std::size(mask_vec));
+    Eigen::ArrayXi const mask{ToEigen(mask_vec)};
 
     return grid(mask, Eigen::all);
 }

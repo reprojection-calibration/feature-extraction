@@ -25,21 +25,22 @@ Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points) {
     return eigen_points;
 }
 
+Eigen::ArrayXi ToEigen(std::vector<int> const& vector) {
+    return Eigen::Map<Eigen::ArrayXi const>(vector.data(), std::size(vector));
+}
+
 // There has to be a more eloquent way to do this... but it gets the job done :)
 Eigen::ArrayXi MaskIndices(Eigen::ArrayXi const& array) {
-    std::vector<int> mask_vec;
-    mask_vec.reserve(array.rows());
+    std::vector<int> mask;
+    mask.reserve(array.rows());
 
     for (Eigen::Index i{0}; i < array.rows(); i++) {
         if (array(i) == 1) {
-            mask_vec.push_back(i);
+            mask.push_back(i);
         }
     }
 
-    Eigen::ArrayXi mask(std::size(mask_vec));
-    mask = Eigen::Map<Eigen::ArrayXi>(mask_vec.data(), std::size(mask_vec));
-
-    return mask;
+    return ToEigen(mask);
 }
 
 }  // namespace reprojection_calibration::feature_extraction
