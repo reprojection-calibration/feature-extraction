@@ -141,7 +141,14 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3ExtractorCornerIndices) {
     EXPECT_TRUE(corner_indices2.row(19).isApprox(Eigen::Vector2i{3, 5}.transpose()));
 }
 
-// double AlternatingSum(int const n, double const increment_1, double const increment_2) { }
+double AlternatingSum(int const n, double const increment_1, double const increment_2) {
+    double sum{0};
+    for (int i{1}; i <= n; ++i) {
+        sum += (i % 2 != 0) ? increment_1 : increment_2;
+    }
+
+    return sum;
+}
 
 Eigen::MatrixX2d WhatTheHellDoINameThis(Eigen::ArrayX2i const& indices, double const unit_dimension) {
     Eigen::MatrixX2d points{indices.rows(), 2};
@@ -149,19 +156,9 @@ Eigen::MatrixX2d WhatTheHellDoINameThis(Eigen::ArrayX2i const& indices, double c
     for (int i{0}; i < indices.rows(); ++i) {
         Eigen::Array2i const indices_i{indices.row(i)};
 
-        double x{0};
-        for (int j{1}; j <= indices_i(1); ++j) {
-            // WARN(Jack): If we change the pattern (num_bits or design) then this 0.4 (4bits/10bits) will change!
-            x += (j % 2 != 0) ? unit_dimension : (0.4) * unit_dimension;
-        }
-        points.row(i)(0) = x;
-
-        double y{0};
-        for (int j{1}; j <= indices_i(0); ++j) {
-            // WARN(Jack): If we change the pattern (num_bits or design) then this 0.4 (4bits/10bits) will change!
-            y += (j % 2 != 0) ? unit_dimension : (0.4) * unit_dimension;
-        }
-        points.row(i)(1) = y;
+        // WARN(Jack): If we change the pattern (num_bits or design) then this 0.4 (4bits/10bits) will change!
+        points.row(i)(0) = AlternatingSum(indices_i(1), unit_dimension, 0.4 * unit_dimension);
+        points.row(i)(1) = AlternatingSum(indices_i(0), unit_dimension, 0.4 * unit_dimension);
     }
 
     return points;
@@ -172,7 +169,6 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3WhatTheHellDoINameThis) {
                                                             // in each direction because it is always a multiple of two.
     Eigen::MatrixX2d const points{WhatTheHellDoINameThis(grid, 0.5)};
 
-    std::cout << points << std::endl;
     EXPECT_EQ(points.rows(), grid.rows());
     EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector2d{0, 0}.transpose()));
     EXPECT_TRUE(points.row(47).isApprox(Eigen::Vector2d{2.6, 1.9}.transpose()));
