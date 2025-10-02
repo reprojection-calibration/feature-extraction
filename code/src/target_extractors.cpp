@@ -15,7 +15,7 @@ CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, const
       point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)},
       points_{point_indices_.rows(), 3} {
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
-    points_.col(2).array() = 0;  // Flat on calibration board, z=0.
+    points_.col(2).setZero();;  // Flat on calibration board, z=0.
 }
 
 std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image) const {
@@ -47,7 +47,7 @@ CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const dou
 
     points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
-    points_.col(2).array() = 0;
+    points_.col(2).setZero();;
 }
 
 std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) const {
@@ -135,19 +135,15 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
     return indices(mask, Eigen::all);
 }
 
-
-
-Eigen::MatrixX2d AprilGrid3Extractor::WhatTheHellDoINameThis(Eigen::ArrayX2i const& indices,
-                                                             double const unit_dimension) {
-    Eigen::MatrixX2d points{indices.rows(), 2};
-
+Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension) {
+    Eigen::MatrixX3d points{indices.rows(), 3};
     for (int i{0}; i < indices.rows(); ++i) {
-        Eigen::Array2i const indices_i{indices.row(i)};
-
-        // WARN(Jack): If we change the pattern (num_bits or design) then this 0.4 (4bits/10bits) will change!
-        points.row(i)(0) = AlternatingSum(indices_i(1), unit_dimension, 0.4 * unit_dimension);
-        points.row(i)(1) = AlternatingSum(indices_i(0), unit_dimension, 0.4 * unit_dimension);
+        // WARN(Jack): If we change the pattern (num_bits or design) then this 0.4 (4bits/10bits) will change! This
+        // function is currently assuming that AprilBoard3 will be fixed forever using the custom 36h11 tag family.
+        points.row(i)(0) = AlternatingSum(indices.row(i)(1), unit_dimension, 0.4 * unit_dimension);
+        points.row(i)(1) = AlternatingSum(indices.row(i)(0), unit_dimension, 0.4 * unit_dimension);
     }
+    points.col(2).setZero();
 
     return points;
 }

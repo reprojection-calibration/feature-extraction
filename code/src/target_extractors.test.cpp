@@ -141,12 +141,13 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3ExtractorCornerIndices) {
     EXPECT_TRUE(corner_indices2.row(19).isApprox(Eigen::Vector2i{3, 5}.transpose()));
 }
 
-TEST_F(AprilTagTestFixture, TestAprilGrid3WhatTheHellDoINameThis) {
-    Eigen::ArrayX2i const grid{GenerateGridIndices(6, 8)};  // Should be even because aprilgrids always have even points
-                                                            // in each direction because it is always a multiple of two.
-    Eigen::MatrixX2d const points{AprilGrid3Extractor::WhatTheHellDoINameThis(grid, 0.5)};
+TEST_F(AprilTagTestFixture, TestAprilGrid3CornerPositions) {
+    // Should be even because aprilgrids always have even points in each direction because it is always a multiple of
+    // two of the board's tag rows/columns
+    Eigen::ArrayX2i const grid{GenerateGridIndices(6, 8)};
+    Eigen::MatrixX3d const points{AprilGrid3Extractor::CornerPositions(grid, 0.5)};
 
     EXPECT_EQ(points.rows(), grid.rows());
-    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector2d{0, 0}.transpose()));
-    EXPECT_TRUE(points.row(47).isApprox(Eigen::Vector2d{2.6, 1.9}.transpose()));
+    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
+    EXPECT_TRUE(points.row(47).isApprox(Eigen::Vector3d{2.6, 1.9, 0}.transpose()));
 };

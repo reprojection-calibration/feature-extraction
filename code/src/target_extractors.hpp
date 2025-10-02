@@ -45,7 +45,7 @@ class AprilGrid3Extractor : public TargetExtractor {
     static Eigen::ArrayX2i CornerIndices(cv::Size const& pattern_size,
                                          std::vector<AprilTagDetection> const& detections);
 
-    static Eigen::MatrixX2d WhatTheHellDoINameThis(Eigen::ArrayX2i const& indices, double const unit_dimension);
+    static Eigen::MatrixX3d CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension);
 
    private:
     // TODO(Jack): Consider making these two extraction functions public and testing them!
