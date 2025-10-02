@@ -41,8 +41,11 @@ class AprilGrid3Extractor : public TargetExtractor {
     // WARN(Jack): The corner indices as labeled here to not logically match the order of how they are extracted. You
     // can see this when running the live demo that the indices do not show up in the expected logical row and column
     // order.
+    // TODO(Jack): We need a better name that conotates its more complicated function, also calculating the points
     static Eigen::ArrayX2i CornerIndices(cv::Size const& pattern_size,
                                          std::vector<AprilTagDetection> const& detections);
+
+    static Eigen::MatrixX2d WhatTheHellDoINameThis(Eigen::ArrayX2i const& indices, double const unit_dimension);
 
    private:
     // TODO(Jack): Consider making these two extraction functions public and testing them!
