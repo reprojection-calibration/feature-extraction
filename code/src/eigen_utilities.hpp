@@ -6,7 +6,9 @@
 
 namespace reprojection_calibration::feature_extraction {
 
-Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols);
+// Requesting even_only has the effect of allowing us to produce asymmetric grids like those required by the asymmetric
+// circle grid target.
+Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols, bool const even_only = false);
 
 Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points);
 

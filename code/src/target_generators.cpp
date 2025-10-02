@@ -49,13 +49,15 @@ cv::Mat GenerateCircleGrid(cv::Size const& pattern_size, int const circle_radius
                     white_space_border};
     cv::Mat circlgrid{255 * cv::Mat::ones(height, width, CV_8UC1)};
 
-    Eigen::ArrayX2i const grid{GenerateGridIndices(pattern_size.height, pattern_size.width)};
+    Eigen::ArrayX2i grid;
+    if (asymmetric) {
+        grid = GenerateGridIndices(pattern_size.height, pattern_size.width, true);
+    } else {
+        grid = GenerateGridIndices(pattern_size.height, pattern_size.width, false);
+    }
+
     for (Eigen::Index i{0}; i < grid.rows(); ++i) {
         Eigen::Array2i const indices{grid.row(i)};
-
-        if (asymmetric and indices.sum() % 2 != 0) {
-            continue;
-        }
 
         // THERE IS SOMETHING WRONG! THE WHITE SPACE BORDER IS NOT ONE FULL CIRCLE CIRCUMFERENCE
         cv::Point const center{circle_radius_pixels + (white_space_border / 2) +
