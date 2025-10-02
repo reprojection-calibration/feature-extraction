@@ -12,7 +12,11 @@ namespace reprojection_calibration::feature_extraction {
 
 CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, const double unit_dimension)
     : TargetExtractor(pattern_size, unit_dimension),
-      point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)} {}
+      point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)},
+      points_{point_indices_.rows(), 3} {
+    points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
+    points_.col(2).array() = 0;  // Flat on calibration board, z=0.
+}
 
 std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image) const {
     std::vector<cv::Point2f> corners;
@@ -27,7 +31,7 @@ std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image)
     cv::cornerSubPix(image, corners, cv::Size(11, 11), cv::Size(-1, -1),
                      cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
 
-    return FeatureFrame{ToEigen(corners), point_indices_};
+    return FeatureFrame{ToEigen(corners), points_, point_indices_};
 }
 
 CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const double unit_dimension,
@@ -40,6 +44,10 @@ CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const dou
     } else {
         point_indices_ = GenerateGridIndices(pattern_size_.height, pattern_size_.width);
     }
+
+    points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
+    points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
+    points_.col(2).array() = 0;
 }
 
 std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) const {
@@ -65,9 +73,9 @@ std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) c
 
     if (not pattern_found) {
         return std::nullopt;
-    }
+    };
 
-    return FeatureFrame{ToEigen(corners), point_indices_};
+    return FeatureFrame{ToEigen(corners), points_, point_indices_};
 }
 
 // NOTE(Jack): Use of the tagCustom36h11 and all settings are hardcoded here! This means no on can select another
@@ -94,8 +102,11 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
         corners.block<4, 2>(4 * i, 0) = refined_extraction_corners;
     }
 
+    // TODO ACTUALLY CALCULATE
+    Eigen::MatrixX3d points;
+
     // TODO(Jack): Make corner and point naming consistent!
-    return FeatureFrame{corners, CornerIndices(pattern_size_, raw_detections)};
+    return FeatureFrame{corners, points, CornerIndices(pattern_size_, raw_detections)};
 }
 
 // TODO(Jack): This is not a very eloquent implementation... If there is a way to do this using some more expressive

@@ -17,7 +17,7 @@ class CheckerboardExtractor : public TargetExtractor {
 
    private:
     Eigen::ArrayX2i point_indices_;
-    Eigen::ArrayX3d points_;
+    Eigen::MatrixX3d points_;
 };
 
 class CircleGridExtractor : public TargetExtractor {
@@ -29,7 +29,7 @@ class CircleGridExtractor : public TargetExtractor {
    private:
     bool asymmetric_;
     Eigen::ArrayX2i point_indices_;
-    Eigen::ArrayX3d points_;
+    Eigen::MatrixX3d points_;
 };
 
 class AprilGrid3Extractor : public TargetExtractor {

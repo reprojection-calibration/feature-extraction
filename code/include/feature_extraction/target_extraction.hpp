@@ -9,6 +9,7 @@ namespace reprojection_calibration::feature_extraction {
 
 struct FeatureFrame {
     Eigen::MatrixX2d pixels;
+    Eigen::MatrixX3d points;
     // TODO(Jack): Is it better to return a 2d index or 1d index?
     Eigen::ArrayX2i indices;
 };

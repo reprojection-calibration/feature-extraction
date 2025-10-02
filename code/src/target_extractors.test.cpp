@@ -24,6 +24,11 @@ TEST(TargetExtractors, TestCheckerboardExtractor) {
     EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{100, 100}.transpose(), 1e-6));   // First pixel - heuristic
     EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{250, 200}.transpose(), 1e-6));  // Last pixel - heuristic
 
+    Eigen::MatrixX3d const& points{target->points};
+    EXPECT_EQ(points.rows(), pattern_size.height * pattern_size.width);
+    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));     // First pixel - heuristic
+    EXPECT_TRUE(points.row(11).isApprox(Eigen::Vector3d{1, 1.5, 0}.transpose()));  // Last pixel - heuristic
+
     Eigen::ArrayX2i const& indices{target->indices};
     EXPECT_EQ(indices.rows(), pattern_size.width * pattern_size.height);
     EXPECT_TRUE(indices.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));   // First index - heuristic
@@ -47,6 +52,11 @@ TEST(TargetExtractors, TestCircleGridExtractor) {
     EXPECT_EQ(pixels.rows(), pattern_size.width * pattern_size.height);
     EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{265, 195}.transpose(), 1e-6));
     EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{55, 55}.transpose(), 1e-6));
+
+    Eigen::MatrixX3d const& points{target->points};
+    EXPECT_EQ(points.rows(), pattern_size.height * pattern_size.width);
+    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
+    EXPECT_TRUE(points.row(11).isApprox(Eigen::Vector3d{1, 1.5, 0}.transpose()));
 
     Eigen::ArrayX2i const& indices{target->indices};
     EXPECT_EQ(indices.rows(), pattern_size.height * pattern_size.width);
@@ -76,6 +86,11 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
               (pattern_size.width * pattern_size.height) / 2);  // NOTE(Jack): Divide by two due to asymmetry!
     EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));
     EXPECT_TRUE(pixels.row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));
+
+    Eigen::MatrixX3d const& points{target->points};
+    EXPECT_EQ(points.rows(), (pattern_size.width * pattern_size.height) / 2);
+    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
+    EXPECT_TRUE(points.row(20).isApprox(Eigen::Vector3d{3, 2, 0}.transpose()));
 
     Eigen::ArrayX2i const& indices{target->indices};
     EXPECT_EQ(indices.rows(), (pattern_size.width * pattern_size.height) / 2);
