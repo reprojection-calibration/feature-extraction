@@ -11,12 +11,11 @@ extern "C" {
 namespace reprojection_calibration::feature_extraction {
 
 CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, const double unit_dimension)
-    : TargetExtractor(pattern_size, unit_dimension),
-      point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)},
-      points_{point_indices_.rows(), 3} {
+    : TargetExtractor(pattern_size, unit_dimension) {
+    point_indices_ = GenerateGridIndices(pattern_size_.height, pattern_size_.width);
+    points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
-    points_.col(2).setZero();
-    ;  // Flat on calibration board, z=0.
+    points_.col(2).setZero();  // Flat on calibration board, z=0.
 }
 
 std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image) const {
@@ -49,7 +48,6 @@ CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const dou
     points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
     points_.col(2).setZero();
-    ;
 }
 
 std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) const {
@@ -85,7 +83,10 @@ std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) c
 AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size, const double unit_dimension)
     : TargetExtractor(pattern_size, unit_dimension),
       tag_family_{AprilTagFamily{tagCustom36h11_create(), tagCustom36h11_destroy}},
-      tag_detector_{AprilTagDetector{tag_family_, {2.0, 0.0, 1, false, false}}} {}
+      tag_detector_{AprilTagDetector{tag_family_, {2.0, 0.0, 1, false, false}}} {
+    point_indices_ = GenerateGridIndices(2 * pattern_size_.height, 2 * pattern_size_.width);
+    points_ = CornerPositions(point_indices_, unit_dimension);
+}
 
 std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) const {
     std::vector<AprilTagDetection> const raw_detections{tag_detector_.Detect(image)};
@@ -104,18 +105,21 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
         corners.block<4, 2>(4 * i, 0) = refined_extraction_corners;
     }
 
-    auto const [corner_indices,
-                points]{AprilGrid3Extractor::VisibleGeometry(pattern_size_, unit_dimension_, raw_detections)};
+    Eigen::ArrayXi const mask{AprilGrid3Extractor::VisibleGeometry(pattern_size_, raw_detections)};
 
     // TODO(Jack): Make corner and point naming consistent!
-    return FeatureFrame{corners, points, corner_indices};
+    return FeatureFrame{corners, points_(mask, Eigen::all), point_indices_(mask, Eigen::all)};
 }
 
-// TODO(Jack): This is not a very eloquent implementation... If there is a way to do this using some more expressive
-// matrix math or simple indexing lets do that :)
-std::tuple<Eigen::ArrayX2i, Eigen::MatrixX3d> AprilGrid3Extractor::VisibleGeometry(
-    cv::Size const& pattern_size, double const unit_dimension, std::vector<AprilTagDetection> const& detections) {
-    std::vector<int> mask_vec;
+// This function is responsible for handling the more complex indexing and grid arrangement that is inherent to an
+// april board. Our goal when dealing with the april board is to produce rows and columns of points exactly like a
+// chekerboard or circle grid. Because of the nature of april tags (having four points for each tag) and the
+// requirement to handle different size boards and different metric size tags, this is not trivial. This function is
+// the critical building block that is responsible for providing a mask which tells us, given the detection tag IDs,
+// which points are visible and which are not.
+Eigen::ArrayXi AprilGrid3Extractor::VisibleGeometry(cv::Size const& pattern_size,
+                                                    std::vector<AprilTagDetection> const& detections) {
+    std::vector<int> mask;
     for (auto const& detection : detections) {
         int const i{static_cast<int>(detection.id / pattern_size.width)};
         int const j{detection.id % pattern_size.width};
@@ -125,20 +129,13 @@ std::tuple<Eigen::ArrayX2i, Eigen::MatrixX3d> AprilGrid3Extractor::VisibleGeomet
         int const corner_2{corner_0 + (2 * pattern_size.width)};
         int const corner_3{corner_2 + 1};
 
-        mask_vec.push_back(corner_0);
-        mask_vec.push_back(corner_1);
-        mask_vec.push_back(corner_2);
-        mask_vec.push_back(corner_3);
+        mask.push_back(corner_0);
+        mask.push_back(corner_1);
+        mask.push_back(corner_2);
+        mask.push_back(corner_3);
     }
-    Eigen::ArrayXi const mask{ToEigen(mask_vec)};
 
-    // TODO(Jack): The grid here and its corner positions are actually known during construction  - it is only the mask
-    // that needs to be dynamically calculated and applied! This entire logic and grouping can be more clearly organized
-    // and be made more similar to the checkerboard and circlegrid cases.
-    Eigen::ArrayX2i const indices{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
-    Eigen::MatrixX3d const corner_positions{CornerPositions(indices, unit_dimension)};
-
-    return {indices(mask, Eigen::all), corner_positions(mask, Eigen::all)};
+    return ToEigen(mask);
 }
 
 Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension) {
@@ -156,15 +153,15 @@ Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& ind
 
 // From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
 //
-//      The 3x3 homography matrix describing the projection from an "ideal" tag (with corners at (-1,1), (1,1), (1,-1),
-//      and (-1,-1)) to pixels in the image.
+//      The 3x3 homography matrix describing the projection from an "ideal" tag (with corners at (-1,1), (1,1),
+//      (1,-1), and (-1,-1)) to pixels in the image.
 //
-// Here the "corner" positions correspond to the four corners on the inside of the black ring that defines the "quad" of
-// an April Tag 3. In the tags designed for use in the April Board 3, the corners that we want to extract and use are
-// found on the outside of this black ring, at the intersection of the black ring and the corner element. This
-// intersection is designed to provide the characteristic checkerboard like intersection which can be refined using the
-// cv::cornerSubPix() function to provide nearly exact corner pixel coordinates.
-// ADD , int const num_bits
+// Here the "corner" positions correspond to the four corners on the inside of the black ring that defines the
+// "quad" of an April Tag 3. In the tags designed for use in the April Board 3, the corners that we want to extract
+// and use are found on the outside of this black ring, at the intersection of the black ring and the corner
+// element. This intersection is designed to provide the characteristic checkerboard like intersection which can be
+// refined using the cv::cornerSubPix() function to provide nearly exact corner pixel coordinates. ADD , int const
+// num_bits
 Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::EstimateExtractionCorners(Eigen::Matrix3d const& H,
                                                                            int const sqrt_num_bits) {
     // NOTE(Jack): These corners have been reordered from how they are listed in the april tag documentation. The
@@ -183,8 +180,8 @@ Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::EstimateExtractionCorners(Eigen
 
 Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::RefineCorners(cv::Mat const& image,
                                                                Eigen::Matrix<double, 4, 2> const& extraction_corners) {
-    // NOTE(Jack): Eigen is column major by default, but opencv is row major (like the rest of the world...) so we need
-    // to specifically specify Eigen::RowMajor here in order for the cv::Mat view to make sense.
+    // NOTE(Jack): Eigen is column major by default, but opencv is row major (like the rest of the world...) so we
+    // need to specifically specify Eigen::RowMajor here in order for the cv::Mat view to make sense.
     Eigen::Matrix<float, 4, 2, Eigen::RowMajor> refined_extraction_corners{extraction_corners.cast<float>()};
     cv::Mat cv_view_extraction_corners(refined_extraction_corners.rows(), refined_extraction_corners.cols(), CV_32FC1,
                                        refined_extraction_corners.data());  // cv::cornerSubPix() requires float type

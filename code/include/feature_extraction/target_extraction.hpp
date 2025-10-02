@@ -21,12 +21,16 @@ class TargetExtractor {
 
     virtual ~TargetExtractor() = default;
 
-    // NOTE(Jack): In the future this will return a more complex data type that fully describes the target detection
     virtual std::optional<FeatureFrame> Extract(cv::Mat const& image) const = 0;
 
    protected:
     cv::Size pattern_size_;
     double unit_dimension_;
+    // NOTE(Jack): For detectors which can only detect "whole" boards the Extract() method will simply return these in
+    // their entirety. For targets which can have partial detections (ex. AprilGrid3) their Extract() method will mask
+    // out the indices and points which were visible and only return those.
+    Eigen::ArrayX2i point_indices_;
+    Eigen::MatrixX3d points_;
 };
 
 enum class TargetType { Checkerboard, CircleGrid, AprilGrid3 };

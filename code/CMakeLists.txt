@@ -59,6 +59,7 @@ foreach (EXAMPLE IN LISTS EXAMPLES)
     )
 endforeach ()
 
+message(STATUS "Starting to FetchContent googletest - this requires a network connection. ")
 include(FetchContent)
 FetchContent_Declare(
         googletest
