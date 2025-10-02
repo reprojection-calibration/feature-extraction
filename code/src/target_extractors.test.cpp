@@ -42,13 +42,13 @@ TEST(TargetExtractors, TestCircleGridExtractor) {
 
     Eigen::MatrixX2d const& pixels{target->pixels};
     EXPECT_EQ(pixels.rows(), pattern_size.width * pattern_size.height);
-    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{265, 195}.transpose(), 1e-6));  // First pixel - heuristic
-    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{55, 55}.transpose(), 1e-6));   // Last pixel - heuristic
+    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{265, 195}.transpose(), 1e-6));
+    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{55, 55}.transpose(), 1e-6));
 
     Eigen::ArrayX2i const& indices{target->indices};
     EXPECT_EQ(indices.rows(), pattern_size.height * pattern_size.width);
-    EXPECT_TRUE(indices.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));   // First index - heuristic
-    EXPECT_TRUE(indices.row(11).isApprox(Eigen::Vector2i{2, 3}.transpose()));  // Last index - heuristic
+    EXPECT_TRUE(indices.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));
+    EXPECT_TRUE(indices.row(11).isApprox(Eigen::Vector2i{2, 3}.transpose()));
 }
 
 TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
@@ -70,13 +70,13 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
     Eigen::MatrixX2d const& pixels{target->pixels};
     EXPECT_EQ(pixels.rows(),
               (pattern_size.width * pattern_size.height) / 2);  // NOTE(Jack): Divide by two due to asymmetry!
-    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));   // First pixel - heuristic
-    EXPECT_TRUE(pixels.row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));  // Last pixel - heuristic
+    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));
+    EXPECT_TRUE(pixels.row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));
 
     Eigen::ArrayX2i const& indices{target->indices};
     EXPECT_EQ(indices.rows(), (pattern_size.width * pattern_size.height) / 2);
-    EXPECT_TRUE(indices.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));   // First index - heuristic
-    EXPECT_TRUE(indices.row(20).isApprox(Eigen::Vector2i{6, 4}.transpose()));  // Last index - heuristic
+    EXPECT_TRUE(indices.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));
+    EXPECT_TRUE(indices.row(20).isApprox(Eigen::Vector2i{6, 4}.transpose()));
 }
 
 TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
