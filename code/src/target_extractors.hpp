@@ -44,6 +44,9 @@ class AprilGrid3Extractor : public TargetExtractor {
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
+    static Eigen::ArrayX2i CornerIndices(cv::Size const& pattern_size,
+                                         std::vector<AprilTagDetection> const& detections);
+
    private:
     // TODO(Jack): Consider making these two extraction functions public and testing them!
     static Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H, int const sqrt_num_bits);

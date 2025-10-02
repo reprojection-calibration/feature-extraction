@@ -99,6 +99,8 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
 
     Eigen::MatrixX2d corners{4 * std::size(raw_detections), 2};
     for (size_t i{0}; i < std::size(raw_detections); ++i) {
+        // ERROR(Jack): The homography can launch the corners outside the bound of the image, this is currently not
+        // handled, and how that shows up in our code is not yet clear (2.10.2025).
         Eigen::Matrix<double, 4, 2> const extraction_corners{
             EstimateExtractionCorners(raw_detections[i].H, std::sqrt(tag_family_.tag_family->nbits))};
         Eigen::Matrix<double, 4, 2> const refined_extraction_corners{RefineCorners(image, extraction_corners)};
