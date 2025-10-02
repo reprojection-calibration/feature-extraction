@@ -11,36 +11,41 @@ namespace reprojection_calibration::feature_extraction {
 
 class CheckerboardExtractor : public TargetExtractor {
    public:
-    explicit CheckerboardExtractor(cv::Size const& pattern_size);
+    explicit CheckerboardExtractor(cv::Size const& pattern_size, double const unit_dimension);
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
    private:
     Eigen::ArrayX2i point_indices_;
+    Eigen::MatrixX3d points_;
 };
 
 class CircleGridExtractor : public TargetExtractor {
    public:
-    CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric);
+    CircleGridExtractor(cv::Size const& pattern_size, double const unit_dimension, bool const asymmetric);
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
    private:
     bool asymmetric_;
     Eigen::ArrayX2i point_indices_;
+    Eigen::MatrixX3d points_;
 };
 
 class AprilGrid3Extractor : public TargetExtractor {
    public:
-    explicit AprilGrid3Extractor(cv::Size const& pattern_size);
+    explicit AprilGrid3Extractor(cv::Size const& pattern_size, double const unit_dimension);
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
     // WARN(Jack): The corner indices as labeled here to not logically match the order of how they are extracted. You
     // can see this when running the live demo that the indices do not show up in the expected logical row and column
     // order.
-    static Eigen::ArrayX2i CornerIndices(cv::Size const& pattern_size,
-                                         std::vector<AprilTagDetection> const& detections);
+    // TODO(Jack): We need a better name that conotates its more complicated function, also calculating the points
+    static std::tuple<Eigen::ArrayX2i, Eigen::MatrixX3d> VisibleGeometry(
+        cv::Size const& pattern_size, double const unit_dimension, std::vector<AprilTagDetection> const& detections);
+
+    static Eigen::MatrixX3d CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension);
 
    private:
     // TODO(Jack): Consider making these two extraction functions public and testing them!

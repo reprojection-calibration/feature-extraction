@@ -2,9 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#include "eigen_utilities.hpp"  // REMOVE
 #include "target_generators.hpp"
 #include "test_fixture_april_tag.hpp"
+#include "utilities.hpp"  // REMOVE
 
 using namespace reprojection_calibration::feature_extraction;
 
@@ -13,7 +13,8 @@ TEST(TargetExtractors, TestCheckerboardExtractor) {
     int const square_size_pixels{50};
     cv::Mat const image{GenerateCheckerboard(pattern_size, square_size_pixels)};
 
-    auto const extractor{CheckerboardExtractor{pattern_size}};
+    double const unit_dimension{0.5};
+    auto const extractor{CheckerboardExtractor{pattern_size, unit_dimension}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
     ASSERT_TRUE(target.has_value());
@@ -22,6 +23,11 @@ TEST(TargetExtractors, TestCheckerboardExtractor) {
     EXPECT_EQ(pixels.rows(), pattern_size.height * pattern_size.width);
     EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{100, 100}.transpose(), 1e-6));   // First pixel - heuristic
     EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{250, 200}.transpose(), 1e-6));  // Last pixel - heuristic
+
+    Eigen::MatrixX3d const& points{target->points};
+    EXPECT_EQ(points.rows(), pattern_size.height * pattern_size.width);
+    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));     // First pixel - heuristic
+    EXPECT_TRUE(points.row(11).isApprox(Eigen::Vector3d{1, 1.5, 0}.transpose()));  // Last pixel - heuristic
 
     Eigen::ArrayX2i const& indices{target->indices};
     EXPECT_EQ(indices.rows(), pattern_size.width * pattern_size.height);
@@ -36,7 +42,8 @@ TEST(TargetExtractors, TestCircleGridExtractor) {
     bool const asymmetric{false};
     cv::Mat const image{GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
-    auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
+    double const unit_dimension{0.5};
+    auto const extractor{CircleGridExtractor{pattern_size, unit_dimension, asymmetric}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
     ASSERT_TRUE(target.has_value());
@@ -45,6 +52,11 @@ TEST(TargetExtractors, TestCircleGridExtractor) {
     EXPECT_EQ(pixels.rows(), pattern_size.width * pattern_size.height);
     EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{265, 195}.transpose(), 1e-6));
     EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{55, 55}.transpose(), 1e-6));
+
+    Eigen::MatrixX3d const& points{target->points};
+    EXPECT_EQ(points.rows(), pattern_size.height * pattern_size.width);
+    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
+    EXPECT_TRUE(points.row(11).isApprox(Eigen::Vector3d{1, 1.5, 0}.transpose()));
 
     Eigen::ArrayX2i const& indices{target->indices};
     EXPECT_EQ(indices.rows(), pattern_size.height * pattern_size.width);
@@ -63,7 +75,8 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
     bool const asymmetric{true};
     cv::Mat image{GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
-    auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
+    double const unit_dimension{0.5};
+    auto const extractor{CircleGridExtractor{pattern_size, unit_dimension, asymmetric}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
     ASSERT_TRUE(target.has_value());
@@ -73,6 +86,11 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
               (pattern_size.width * pattern_size.height) / 2);  // NOTE(Jack): Divide by two due to asymmetry!
     EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));
     EXPECT_TRUE(pixels.row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));
+
+    Eigen::MatrixX3d const& points{target->points};
+    EXPECT_EQ(points.rows(), (pattern_size.width * pattern_size.height) / 2);
+    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
+    EXPECT_TRUE(points.row(20).isApprox(Eigen::Vector3d{3, 2, 0}.transpose()));
 
     Eigen::ArrayX2i const& indices{target->indices};
     EXPECT_EQ(indices.rows(), (pattern_size.width * pattern_size.height) / 2);
@@ -84,7 +102,8 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
     cv::Mat const april_tag{AprilBoard3Generation::GenerateTag(bit_size_pixel_, code_matrix_0_)};
 
     cv::Size const pattern_size{4, 3};
-    auto const extractor{AprilGrid3Extractor{pattern_size}};
+    double const unit_dimension{0.5};
+    auto const extractor{AprilGrid3Extractor{pattern_size, unit_dimension}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(april_tag)};
     ASSERT_TRUE(target.has_value());
@@ -108,16 +127,38 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3ExtractorCornerIndices) {
         detections.push_back(detection_i);
     }
 
-    Eigen::ArrayX2i const corner_indices1{AprilGrid3Extractor::CornerIndices(pattern_size, detections)};
+    double const unit_dimension{0.5};
+    auto const [corner_indices1,
+                corners1]{AprilGrid3Extractor::VisibleGeometry(pattern_size, unit_dimension, detections)};
     EXPECT_EQ(corner_indices1.rows(), 4 * pattern_size.width * pattern_size.height);
     EXPECT_TRUE(corner_indices1.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));
     EXPECT_TRUE(corner_indices1.row(23).isApprox(Eigen::Vector2i{3, 5}.transpose()));
 
+    EXPECT_EQ(corners1.rows(), 4 * pattern_size.width * pattern_size.height);
+    EXPECT_TRUE(corners1.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
+    EXPECT_TRUE(corners1.row(23).isApprox(Eigen::Vector3d{1.9, 1.2, 0}.transpose()));
+
     // Now remove the first tag detection and see that it still "works"
     detections.erase(std::begin(detections));
 
-    Eigen::ArrayX2i const corner_indices2{AprilGrid3Extractor::CornerIndices(pattern_size, detections)};
+    auto const [corner_indices2,
+                corners2]{AprilGrid3Extractor::VisibleGeometry(pattern_size, unit_dimension, detections)};
     EXPECT_EQ(corner_indices2.rows(), 4 * (pattern_size.width * pattern_size.height - 1));
     EXPECT_TRUE(corner_indices2.row(0).isApprox(Eigen::Vector2i{0, 2}.transpose()));
     EXPECT_TRUE(corner_indices2.row(19).isApprox(Eigen::Vector2i{3, 5}.transpose()));
+
+    EXPECT_EQ(corners2.rows(), 4 * (pattern_size.width * pattern_size.height - 1));
+    EXPECT_TRUE(corners2.row(0).isApprox(Eigen::Vector3d{0.7, 0, 0}.transpose()));
+    EXPECT_TRUE(corners2.row(19).isApprox(Eigen::Vector3d{1.9, 1.2, 0}.transpose()));
 }
+
+TEST_F(AprilTagTestFixture, TestAprilGrid3CornerPositions) {
+    // Should be even because aprilgrids always have even points in each direction because it is always a multiple of
+    // two of the board's tag rows/columns
+    Eigen::ArrayX2i const grid{GenerateGridIndices(6, 8)};
+    Eigen::MatrixX3d const points{AprilGrid3Extractor::CornerPositions(grid, 0.5)};
+
+    EXPECT_EQ(points.rows(), grid.rows());
+    EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
+    EXPECT_TRUE(points.row(47).isApprox(Eigen::Vector3d{2.6, 1.9, 0}.transpose()));
+};

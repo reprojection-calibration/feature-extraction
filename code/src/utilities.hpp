@@ -16,4 +16,6 @@ Eigen::ArrayXi ToEigen(std::vector<int> const& vector);
 
 Eigen::ArrayXi MaskIndices(Eigen::ArrayXi const& array);
 
+double AlternatingSum(int const n, double const increment_1, double const increment_2);
+
 }  // namespace reprojection_calibration::feature_extraction

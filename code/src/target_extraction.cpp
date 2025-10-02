@@ -6,15 +6,16 @@ namespace reprojection_calibration::feature_extraction {
 
 std::unique_ptr<TargetExtractor> CreateTargetExtractor(const TargetType type) {
     cv::Size const pattern_size{4, 3};  // comes from config file in the future
+    double const unit_dimension{0.5};
 
     if (type == TargetType::Checkerboard) {
-        return std::make_unique<CheckerboardExtractor>(pattern_size);
+        return std::make_unique<CheckerboardExtractor>(pattern_size, unit_dimension);
     } else if (type == TargetType::CircleGrid) {
         bool const asymmetric{false};  // comes from config file in the future
-        return std::make_unique<CircleGridExtractor>(pattern_size, asymmetric);
+        return std::make_unique<CircleGridExtractor>(pattern_size, unit_dimension, asymmetric);
     } else {
         // WARN(Jack): Pattern size might not be used
-        return std::make_unique<AprilGrid3Extractor>(pattern_size);
+        return std::make_unique<AprilGrid3Extractor>(pattern_size, unit_dimension);
     }
 }
 

@@ -6,12 +6,18 @@ extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
 }
 
-#include "eigen_utilities.hpp"
+#include "utilities.hpp"
 
 namespace reprojection_calibration::feature_extraction {
 
-CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size)
-    : TargetExtractor(pattern_size), point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)} {}
+CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, const double unit_dimension)
+    : TargetExtractor(pattern_size, unit_dimension),
+      point_indices_{GenerateGridIndices(pattern_size_.height, pattern_size_.width)},
+      points_{point_indices_.rows(), 3} {
+    points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
+    points_.col(2).setZero();
+    ;  // Flat on calibration board, z=0.
+}
 
 std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image) const {
     std::vector<cv::Point2f> corners;
@@ -26,11 +32,12 @@ std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image)
     cv::cornerSubPix(image, corners, cv::Size(11, 11), cv::Size(-1, -1),
                      cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
 
-    return FeatureFrame{ToEigen(corners), point_indices_};
+    return FeatureFrame{ToEigen(corners), points_, point_indices_};
 }
 
-CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric)
-    : TargetExtractor(pattern_size), asymmetric_{asymmetric} {
+CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const double unit_dimension,
+                                         bool const asymmetric)
+    : TargetExtractor(pattern_size, unit_dimension), asymmetric_{asymmetric} {
     if (asymmetric_) {
         // NOTE(Jack): We reverse the order of the width and height here for the asymmetric case! Why that is... you
         // tell me boss...
@@ -38,6 +45,11 @@ CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, bool cons
     } else {
         point_indices_ = GenerateGridIndices(pattern_size_.height, pattern_size_.width);
     }
+
+    points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
+    points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
+    points_.col(2).setZero();
+    ;
 }
 
 std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) const {
@@ -63,15 +75,15 @@ std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) c
 
     if (not pattern_found) {
         return std::nullopt;
-    }
+    };
 
-    return FeatureFrame{ToEigen(corners), point_indices_};
+    return FeatureFrame{ToEigen(corners), points_, point_indices_};
 }
 
 // NOTE(Jack): Use of the tagCustom36h11 and all settings are hardcoded here! This means no on can select another
 // family. Find a way to make this configurable if possible, but it will likely require recompilation.
-AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size)
-    : TargetExtractor(pattern_size),
+AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size, const double unit_dimension)
+    : TargetExtractor(pattern_size, unit_dimension),
       tag_family_{AprilTagFamily{tagCustom36h11_create(), tagCustom36h11_destroy}},
       tag_detector_{AprilTagDetector{tag_family_, {2.0, 0.0, 1, false, false}}} {}
 
@@ -92,14 +104,17 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
         corners.block<4, 2>(4 * i, 0) = refined_extraction_corners;
     }
 
+    auto const [corner_indices,
+                points]{AprilGrid3Extractor::VisibleGeometry(pattern_size_, unit_dimension_, raw_detections)};
+
     // TODO(Jack): Make corner and point naming consistent!
-    return FeatureFrame{corners, CornerIndices(pattern_size_, raw_detections)};
+    return FeatureFrame{corners, points, corner_indices};
 }
 
 // TODO(Jack): This is not a very eloquent implementation... If there is a way to do this using some more expressive
 // matrix math or simple indexing lets do that :)
-Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
-                                                   std::vector<AprilTagDetection> const& detections) {
+std::tuple<Eigen::ArrayX2i, Eigen::MatrixX3d> AprilGrid3Extractor::VisibleGeometry(
+    cv::Size const& pattern_size, double const unit_dimension, std::vector<AprilTagDetection> const& detections) {
     std::vector<int> mask_vec;
     for (auto const& detection : detections) {
         int const i{static_cast<int>(detection.id / pattern_size.width)};
@@ -115,11 +130,28 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
         mask_vec.push_back(corner_2);
         mask_vec.push_back(corner_3);
     }
-
-    Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
     Eigen::ArrayXi const mask{ToEigen(mask_vec)};
 
-    return grid(mask, Eigen::all);
+    // TODO(Jack): The grid here and its corner positions are actually known during construction  - it is only the mask
+    // that needs to be dynamically calculated and applied! This entire logic and grouping can be more clearly organized
+    // and be made more similar to the checkerboard and circlegrid cases.
+    Eigen::ArrayX2i const indices{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
+    Eigen::MatrixX3d const corner_positions{CornerPositions(indices, unit_dimension)};
+
+    return {indices(mask, Eigen::all), corner_positions(mask, Eigen::all)};
+}
+
+Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension) {
+    Eigen::MatrixX3d points{indices.rows(), 3};
+    for (int i{0}; i < indices.rows(); ++i) {
+        // WARN(Jack): If we change the pattern (num_bits or design) then this 0.4 (4bits/10bits) will change! This
+        // function is currently assuming that AprilBoard3 will be fixed forever using the custom 36h11 tag family.
+        points.row(i)(0) = AlternatingSum(indices.row(i)(1), unit_dimension, 0.4 * unit_dimension);
+        points.row(i)(1) = AlternatingSum(indices.row(i)(0), unit_dimension, 0.4 * unit_dimension);
+    }
+    points.col(2).setZero();
+
+    return points;
 }
 
 // From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
