@@ -15,9 +15,6 @@ class CheckerboardExtractor : public TargetExtractor {
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
-   private:
-    Eigen::ArrayX2i point_indices_;
-    Eigen::MatrixX3d points_;
 };
 
 class CircleGridExtractor : public TargetExtractor {
@@ -28,8 +25,6 @@ class CircleGridExtractor : public TargetExtractor {
 
    private:
     bool asymmetric_;
-    Eigen::ArrayX2i point_indices_;
-    Eigen::MatrixX3d points_;
 };
 
 class AprilGrid3Extractor : public TargetExtractor {
@@ -56,9 +51,7 @@ class AprilGrid3Extractor : public TargetExtractor {
 
     AprilTagFamily tag_family_;
     AprilTagDetector tag_detector_;
-    // TODO(Jack): If now everyone has these, should these be a part of the base class?
-    Eigen::ArrayX2i point_indices_;
-    Eigen::MatrixX3d points_;
+
 };
 
 }  // namespace reprojection_calibration::feature_extraction
