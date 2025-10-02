@@ -14,7 +14,6 @@ class CheckerboardExtractor : public TargetExtractor {
     explicit CheckerboardExtractor(cv::Size const& pattern_size, double const unit_dimension);
 
     std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
-
 };
 
 class CircleGridExtractor : public TargetExtractor {
@@ -51,7 +50,6 @@ class AprilGrid3Extractor : public TargetExtractor {
 
     AprilTagFamily tag_family_;
     AprilTagDetector tag_detector_;
-
 };
 
 }  // namespace reprojection_calibration::feature_extraction
