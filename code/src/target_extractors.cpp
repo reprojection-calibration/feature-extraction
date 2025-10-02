@@ -128,9 +128,9 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
         mask_vec.push_back(corner_2);
         mask_vec.push_back(corner_3);
     }
+    Eigen::ArrayXi const mask{ToEigen(mask_vec)};
 
     Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
-    Eigen::ArrayXi const mask{ToEigen(mask_vec)};
 
     return grid(mask, Eigen::all);
 }
