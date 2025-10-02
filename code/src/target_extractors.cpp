@@ -1,7 +1,5 @@
 #include "target_extractors.hpp"
 
-#include <iostream> // REMOVE
-
 extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
 }
@@ -32,22 +30,24 @@ std::optional<Eigen::MatrixX2d> CheckerboardExtractor::Extract(cv::Mat const& im
 CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric)
     : TargetExtractor(pattern_size), asymmetric_{asymmetric} {
     if (asymmetric_) {
-        // TODO(Jack): Make pattern size specification consistent!!!! Not 3x7!!!!
-        Eigen::ArrayX2i grid{GenerateGridIndices(pattern_size.height, pattern_size.width)};
+        // NOTE(Jack): In consideration of how the circle grid extractor works given the current coordinate conventions
+        // (and possible just due to how opencv works) we reverse the order of the width and height here for the
+        // asymmetric case!
+        Eigen::ArrayX2i grid{GenerateGridIndices(pattern_size.width, pattern_size.height)};
 
         // NOTE(Jack): Eigen does not provide direct way to apply the modulo operator, so we follow a method using a
         // unaryExpr() that we adopted from here
         // (https://stackoverflow.com/questions/35798698/eigen-matrix-library-coefficient-wise-modulo-operation)
         // TODO(Jack): Combine this with the logic for the asymmetric target generation!
+        // TODO(Jack): Simplify this extremely by understanding we always just need to start at zero and increment by
+        // two to create these data structures we want!
         Eigen::ArrayXi const is_even{
             ((grid.rowwise().sum().unaryExpr([](int const x) { return x % 2; })) == 0).cast<int>()};
-        std::cout << is_even << std::endl;
-
         Eigen::ArrayXi const mask{MaskIndices(is_even)};
-        std::cout << mask << std::endl;
 
+        // WARN(Jack): I think these work but they are not the row major "top-right" coordinate frame that we normally
+        // image when we are working on images. That being said I believe the IDs are at least consistent!
         point_indices_ = grid(mask, Eigen::all);
-        std::cout << point_indices_ << std::endl;
     } else {
         point_indices_ = GenerateGridIndices(pattern_size_.height, pattern_size_.width);
     }
