@@ -110,11 +110,15 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
     return FeatureFrame{corners, points_(mask, Eigen::all), point_indices_(mask, Eigen::all)};
 }
 
-// TODO(Jack): This is not a very eloquent implementation... If there is a way to do this using some more expressive
-// matrix math or simple indexing lets do that :)
+// This function is responsible for handling the more complex indexing and grid arrangement that is inherent to an april
+// board. Our goal when dealing with the april board is to produce rows and columns of points exactly like a chekerboard
+// or circle grid. Because of the nature of april tags (having four points for each tag) and the requirement to handle
+// different size boards and different metric size tags, this is not trivial. This function is the critical building
+// block that is responsible for providing a mask which tells us, given the detection tag IDs, which points are visible
+// and which are not.
 Eigen::ArrayXi AprilGrid3Extractor::VisibleGeometry(cv::Size const& pattern_size,
                                                     std::vector<AprilTagDetection> const& detections) {
-    std::vector<int> mask_vec;
+    std::vector<int> mask;
     for (auto const& detection : detections) {
         int const i{static_cast<int>(detection.id / pattern_size.width)};
         int const j{detection.id % pattern_size.width};
@@ -124,13 +128,13 @@ Eigen::ArrayXi AprilGrid3Extractor::VisibleGeometry(cv::Size const& pattern_size
         int const corner_2{corner_0 + (2 * pattern_size.width)};
         int const corner_3{corner_2 + 1};
 
-        mask_vec.push_back(corner_0);
-        mask_vec.push_back(corner_1);
-        mask_vec.push_back(corner_2);
-        mask_vec.push_back(corner_3);
+        mask.push_back(corner_0);
+        mask.push_back(corner_1);
+        mask.push_back(corner_2);
+        mask.push_back(corner_3);
     }
 
-    return ToEigen(mask_vec);
+    return ToEigen(mask);
 }
 
 Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension) {
