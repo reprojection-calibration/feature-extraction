@@ -49,10 +49,7 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
     bool const asymmetric{true};
     cv::Mat const image{GenerateCircleGrid(pattern_size, circle_radius_pixels, circle_spacing_pixels, asymmetric)};
 
-    // WARN(Jack): Violation of principle of least surprise! They count every column but only half the rows (i.e. the
-    // ones sticking out on the left side)
-    cv::Size const dimension{pattern_size.height / 2, pattern_size.width};
-    auto const extractor{CircleGridExtractor{dimension, asymmetric}};
+    auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
 
     std::optional<Eigen::MatrixX2d> const pixels{extractor.Extract(image)};
 

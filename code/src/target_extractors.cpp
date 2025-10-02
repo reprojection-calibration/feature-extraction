@@ -63,8 +63,18 @@ std::optional<Eigen::MatrixX2d> CircleGridExtractor::Extract(cv::Mat const& imag
     int const extraction_options{asymmetric_ ? cv::CALIB_CB_CLUSTERING | cv::CALIB_CB_ASYMMETRIC_GRID
                                              : cv::CALIB_CB_CLUSTERING | cv::CALIB_CB_SYMMETRIC_GRID};
 
+    // NOTE(Jack): Something which violates the principle of least surprise is how OpenCV deals with the dimension of
+    // asymmetric circle grids. There are two things which are curious to me; #1 that we have to switch the height and
+    // width order for the asymmetric case and #2 that we need to divide one of the dimension by two! But this is what
+    // works for now.
+    // TODO(Jack): Confirm the dimensions in the target generation logic are consistent and correct!
+    cv::Size pattern_size{pattern_size_};
+    if (asymmetric_) {
+        pattern_size = cv::Size{pattern_size_.height / 2, pattern_size_.width};
+    }
+
     std::vector<cv::Point2f> corners;
-    bool const pattern_found{cv::findCirclesGrid(image, pattern_size_, corners, extraction_options)};
+    bool const pattern_found{cv::findCirclesGrid(image, pattern_size, corners, extraction_options)};
 
     if (not pattern_found) {
         return std::nullopt;
