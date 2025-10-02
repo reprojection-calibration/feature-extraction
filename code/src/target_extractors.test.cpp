@@ -15,13 +15,17 @@ TEST(TargetExtractors, TestCheckerboardExtractor) {
     auto const extractor{CheckerboardExtractor{pattern_size}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
-
     ASSERT_TRUE(target.has_value());
-    EXPECT_EQ(target->pixels.rows(), pattern_size.height * pattern_size.width);
-    EXPECT_TRUE(
-        target->pixels.row(0).isApprox(Eigen::Vector2d{100, 100}.transpose(), 1e-6));  // First pixel - heuristic
-    EXPECT_TRUE(
-        target->pixels.row(11).isApprox(Eigen::Vector2d{250, 200}.transpose(), 1e-6));  // Last pixel - heuristic
+
+    Eigen::MatrixX2d const& pixels{target->pixels};
+    EXPECT_EQ(pixels.rows(), pattern_size.height * pattern_size.width);
+    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{100, 100}.transpose(), 1e-6));   // First pixel - heuristic
+    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{250, 200}.transpose(), 1e-6));  // Last pixel - heuristic
+
+    Eigen::ArrayX2i const& indices{target->indices};
+    EXPECT_EQ(indices.rows(), pattern_size.width * pattern_size.height);
+    EXPECT_TRUE(indices.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));   // First index - heuristic
+    EXPECT_TRUE(indices.row(11).isApprox(Eigen::Vector2i{2, 3}.transpose()));  // Last index - heuristic
 }
 
 TEST(TargetExtractors, TestCircleGridExtractor) {
@@ -34,12 +38,17 @@ TEST(TargetExtractors, TestCircleGridExtractor) {
     auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
-
     ASSERT_TRUE(target.has_value());
-    EXPECT_EQ(target->pixels.rows(), pattern_size.width * pattern_size.height);
-    EXPECT_TRUE(
-        target->pixels.row(0).isApprox(Eigen::Vector2d{265, 195}.transpose(), 1e-6));         // First pixel - heuristic
-    EXPECT_TRUE(target->pixels.row(11).isApprox(Eigen::Vector2d{55, 55}.transpose(), 1e-6));  // Last pixel - heuristic
+
+    Eigen::MatrixX2d const& pixels{target->pixels};
+    EXPECT_EQ(pixels.rows(), pattern_size.width * pattern_size.height);
+    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{265, 195}.transpose(), 1e-6));  // First pixel - heuristic
+    EXPECT_TRUE(pixels.row(11).isApprox(Eigen::Vector2d{55, 55}.transpose(), 1e-6));   // Last pixel - heuristic
+
+    Eigen::ArrayX2i const& indices{target->indices};
+    EXPECT_EQ(indices.rows(), pattern_size.height * pattern_size.width);
+    EXPECT_TRUE(indices.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));   // First index - heuristic
+    EXPECT_TRUE(indices.row(11).isApprox(Eigen::Vector2i{2, 3}.transpose()));  // Last index - heuristic
 }
 
 TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
@@ -56,12 +65,18 @@ TEST(TargetExtractors, TestCircleGridExtractorAsymmetric) {
     auto const extractor{CircleGridExtractor{pattern_size, asymmetric}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(image)};
-
     ASSERT_TRUE(target.has_value());
-    EXPECT_EQ(target->pixels.rows(),
+
+    Eigen::MatrixX2d const& pixels{target->pixels};
+    EXPECT_EQ(pixels.rows(),
               (pattern_size.width * pattern_size.height) / 2);  // NOTE(Jack): Divide by two due to asymmetry!
-    EXPECT_TRUE(target->pixels.row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));  // First pixel - heuristic
-    EXPECT_TRUE(target->pixels.row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));  // Last pixel - heuristic
+    EXPECT_TRUE(pixels.row(0).isApprox(Eigen::Vector2d{475, 55}.transpose(), 1e-6));   // First pixel - heuristic
+    EXPECT_TRUE(pixels.row(20).isApprox(Eigen::Vector2d{55, 335}.transpose(), 1e-6));  // Last pixel - heuristic
+
+    Eigen::ArrayX2i const& indices{target->indices};
+    EXPECT_EQ(indices.rows(), (pattern_size.width * pattern_size.height) / 2);
+    EXPECT_TRUE(indices.row(0).isApprox(Eigen::Vector2i{0, 0}.transpose()));   // First index - heuristic
+    EXPECT_TRUE(indices.row(20).isApprox(Eigen::Vector2i{6, 4}.transpose()));  // Last index - heuristic
 }
 
 TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
@@ -71,13 +86,13 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
     auto const extractor{AprilGrid3Extractor{pattern_size}};
 
     std::optional<FeatureFrame> const target{extractor.Extract(april_tag)};
-
     ASSERT_TRUE(target.has_value());
-    EXPECT_EQ(target->pixels.rows(), 4);  // One tag
 
+    Eigen::MatrixX2d const& pixels{target->pixels};
+    EXPECT_EQ(pixels.rows(), 4);  // One tag
     Eigen::Matrix<double, 4, 2> const gt_pixels{{19.819417953491211, 119.27910614013672},
                                                 {119.13014984130859, 119.13014984130859},
                                                 {119.27910614013672, 19.819416046142578},
                                                 {19.685731887817383, 19.685731887817383}};
-    EXPECT_TRUE(target->pixels.isApprox(gt_pixels, 1e-6));
+    EXPECT_TRUE(pixels.isApprox(gt_pixels, 1e-6));
 }
