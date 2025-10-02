@@ -13,7 +13,7 @@ class CheckerboardExtractor : public TargetExtractor {
    public:
     explicit CheckerboardExtractor(cv::Size const& pattern_size);
 
-    std::optional<Eigen::MatrixX2d> Extract(cv::Mat const& image) const override;
+    std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
    private:
     // Calculated once during construction because for checkerboards and circle grids we either capture the entire board
@@ -26,7 +26,7 @@ class CircleGridExtractor : public TargetExtractor {
    public:
     CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric);
 
-    std::optional<Eigen::MatrixX2d> Extract(cv::Mat const& image) const override;
+    std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
    private:
     bool asymmetric_;
@@ -42,9 +42,10 @@ class AprilGrid3Extractor : public TargetExtractor {
    public:
     explicit AprilGrid3Extractor(cv::Size const& pattern_size);
 
-    std::optional<Eigen::MatrixX2d> Extract(cv::Mat const& image) const override;
+    std::optional<FeatureFrame> Extract(cv::Mat const& image) const override;
 
    private:
+    // TODO(Jack): Consider making these two extraction functions public and testing them!
     static Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H, int const sqrt_num_bits);
 
     static Eigen::Matrix<double, 4, 2> RefineCorners(cv::Mat const& image,

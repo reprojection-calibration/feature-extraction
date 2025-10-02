@@ -23,10 +23,10 @@ int main() {
         cap >> frame;
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-        std::optional<Eigen::MatrixX2d> const pixels{extractor->Extract(gray)};
-        if (pixels.has_value()) {
-            for (Eigen::Index i{0}; i < pixels.value().rows(); ++i) {
-                cv::circle(frame, cv::Point(pixels.value().row(i)[0], pixels.value().row(i)[1]), 1,
+        std::optional<FeatureFrame> const target{extractor->Extract(gray)};
+        if (target.has_value()) {
+            for (Eigen::Index i{0}; i < target.value().pixels.rows(); ++i) {
+                cv::circle(frame, cv::Point(target.value().pixels.row(i)[0], target.value().pixels.row(i)[1]), 1,
                            cv::Scalar(0, 255, 0), 5, cv::LINE_8);
             }
         }

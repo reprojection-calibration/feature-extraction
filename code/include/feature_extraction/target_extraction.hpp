@@ -7,6 +7,12 @@
 
 namespace reprojection_calibration::feature_extraction {
 
+struct FeatureFrame {
+    Eigen::MatrixX2d pixels;
+    // TODO(Jack): Is it better to return a 2d index or 1d index?
+    Eigen::ArrayX2i indices;
+};
+
 class TargetExtractor {
    public:
     TargetExtractor(cv::Size const& pattern_size) : pattern_size_{pattern_size} {}
@@ -14,7 +20,7 @@ class TargetExtractor {
     virtual ~TargetExtractor() = default;
 
     // NOTE(Jack): In the future this will return a more complex data type that fully describes the target detection
-    virtual std::optional<Eigen::MatrixX2d> Extract(cv::Mat const& image) const = 0;
+    virtual std::optional<FeatureFrame> Extract(cv::Mat const& image) const = 0;
 
    protected:
     cv::Size pattern_size_;
