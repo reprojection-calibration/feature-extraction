@@ -115,6 +115,31 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
     return FeatureFrame{corners, point_indices};
 }
 
+
+Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
+                                                   std::vector<AprilTagDetection> const& detections) {
+    // NOTE(Jack): Multiplied by two because every tag has four corners/points/pixels (two in each direction)
+    Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
+
+    // TODO(Jack): The logic in this method about indicing and masking is very similar to the code in the eigen utility
+    // MaskIndices, keep your eyes peeled for optimization or code/idea reuse
+    std::vector<int> mask_vec;
+    mask_vec.reserve(grid.rows());
+    for (auto const& detection : detections) {
+        // WARN(Jack): THIS WILL ASSUME WE ARE ALWAYS STARTING from a tag ID of zero
+        for (int i{0}; i < 4; ++i) {
+            int const corner_id{(4 * detection.id) + i};
+            mask_vec.push_back(corner_id);
+        }
+    }
+
+    // COPY AND PASTED FROM EIGEN UTILTIES MASK FUNCTION
+    Eigen::ArrayXi mask(std::size(mask_vec));
+    mask = Eigen::Map<Eigen::ArrayXi>(mask_vec.data(), std::size(mask_vec));
+
+    return grid(mask, Eigen::all);
+}
+
 // From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)
 //
 //      The 3x3 homography matrix describing the projection from an "ideal" tag (with corners at (-1,1), (1,1), (1,-1),

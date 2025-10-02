@@ -98,29 +98,6 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
     EXPECT_TRUE(pixels.isApprox(gt_pixels, 1e-6));
 }
 
-Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
-                                                   std::vector<AprilTagDetection> const& detections) {
-    // NOTE(Jack): Multiplied by two because every tag has four corners/points/pixels (two in each direction)
-    Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
-
-    // TODO(Jack): The logic in this method about indicing and masking is very similar to the code in the eigen utility
-    // MaskIndices, keep your eyes peeled for optimization or code/idea reuse
-    std::vector<int> mask_vec;
-    mask_vec.reserve(grid.rows());
-    for (auto const& detection : detections) {
-        // WARN(Jack): THIS WILL ASSUME WE ARE ALWAYS STARTING from a tag ID of zero
-        for (int i{0}; i < 4; ++i) {
-            int const corner_id{(4 * detection.id) + i};
-            mask_vec.push_back(corner_id);
-        }
-    }
-
-    // COPY AND PASTED FROM EIGEN UTILTIES MASK FUNCTION
-    Eigen::ArrayXi mask(std::size(mask_vec));
-    mask = Eigen::Map<Eigen::ArrayXi>(mask_vec.data(), std::size(mask_vec));
-
-    return grid(mask, Eigen::all);
-}
 
 TEST_F(AprilTagTestFixture, TestAprilGrid3ExtractorCornerIndices) {
     cv::Size const pattern_size{3, 2};
@@ -129,13 +106,13 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3ExtractorCornerIndices) {
     for (int i{0}; i < pattern_size.width * pattern_size.height; ++i) {
         AprilTagDetection detection_i;
         detection_i.id = i;
-
         detections.push_back(detection_i);
     }
 
     Eigen::ArrayX2i const corner_indices{AprilGrid3Extractor::CornerIndices(pattern_size, detections)};
-
     EXPECT_EQ(corner_indices.rows(), 4 * (pattern_size.width * pattern_size.height));
+    EXPECT_TRUE(corner_indices.row(0).isApprox(Eigen::Vector2i{0,0}.transpose()));
+    EXPECT_TRUE(corner_indices.row(23).isApprox(Eigen::Vector2i{3, 5}.transpose()));
 
     std::cout << corner_indices << std::endl;
 }
