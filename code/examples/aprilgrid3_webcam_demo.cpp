@@ -25,9 +25,16 @@ int main() {
 
         std::optional<FeatureFrame> const target{extractor->Extract(gray)};
         if (target.has_value()) {
-            for (Eigen::Index i{0}; i < target.value().pixels.rows(); ++i) {
-                cv::circle(frame, cv::Point(target.value().pixels.row(i)[0], target.value().pixels.row(i)[1]), 1,
-                           cv::Scalar(0, 255, 0), 5, cv::LINE_8);
+            Eigen::MatrixX2d const& pixels{target.value().pixels};
+            Eigen::ArrayX2i const& indices{target.value().indices};
+            for (Eigen::Index i{0}; i < pixels.rows(); ++i) {
+                cv::circle(frame, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), 1, cv::Scalar(0, 255, 0), 5,
+                           cv::LINE_8);
+
+                std::string const text{"(" + std::to_string(indices.row(i)[0]) + ", " +
+                                       std::to_string(indices.row(i)[1]) + ")"};
+                cv::putText(frame, text, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), cv::FONT_HERSHEY_COMPLEX, 0.5,
+                            cv::Scalar(255, 255, 255), 1);
             }
         }
 
