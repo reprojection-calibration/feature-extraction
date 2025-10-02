@@ -32,24 +32,9 @@ std::optional<FeatureFrame> CheckerboardExtractor::Extract(cv::Mat const& image)
 CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, bool const asymmetric)
     : TargetExtractor(pattern_size), asymmetric_{asymmetric} {
     if (asymmetric_) {
-        // NOTE(Jack): In consideration of how the circle grid extractor works given the current coordinate conventions
-        // (and possible just due to how opencv works) we reverse the order of the width and height here for the
-        // asymmetric case!
-        Eigen::ArrayX2i grid{GenerateGridIndices(pattern_size.width, pattern_size.height)};
-
-        // NOTE(Jack): Eigen does not provide direct way to apply the modulo operator, so we follow a method using a
-        // unaryExpr() that we adopted from here
-        // (https://stackoverflow.com/questions/35798698/eigen-matrix-library-coefficient-wise-modulo-operation)
-        // TODO(Jack): Combine this with the logic for the asymmetric target generation!
-        // TODO(Jack): Simplify this extremely by understanding we always just need to start at zero and increment by
-        // two to create these data structures we want!
-        Eigen::ArrayXi const is_even{
-            ((grid.rowwise().sum().unaryExpr([](int const x) { return x % 2; })) == 0).cast<int>()};
-        Eigen::ArrayXi const mask{MaskIndices(is_even)};
-
-        // WARN(Jack): I think these work but they are not the row major "top-right" coordinate frame that we normally
-        // image when we are working on images. That being said I believe the IDs are at least consistent!
-        point_indices_ = grid(mask, Eigen::all);
+        // NOTE(Jack): We reverse the order of the width and height here for the asymmetric case! Why that is... you
+        // tell me boss...
+        point_indices_ = GenerateGridIndices(pattern_size.width, pattern_size.height, true);
     } else {
         point_indices_ = GenerateGridIndices(pattern_size_.height, pattern_size_.width);
     }
@@ -67,9 +52,7 @@ std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) c
 
     // NOTE(Jack): Something which violates the principle of least surprise is how OpenCV deals with the dimension of
     // asymmetric circle grids. There are two things which are curious to me; #1 that we have to switch the height and
-    // width order for the asymmetric case and #2 that we need to divide one of the dimension by two! But this is what
-    // works for now.
-    // TODO(Jack): Confirm the dimensions in the target generation logic are consistent and correct!
+    // width order for the asymmetric case and #2 that we need to divide one of the dimension by two!
     cv::Size pattern_size{pattern_size_};
     if (asymmetric_) {
         pattern_size = cv::Size{pattern_size_.height / 2, pattern_size_.width};
@@ -85,8 +68,7 @@ std::optional<FeatureFrame> CircleGridExtractor::Extract(cv::Mat const& image) c
     return FeatureFrame{ToEigen(corners), point_indices_};
 }
 
-// TODO(Jack): Are we using pattern size here? Or is this just here for fun?
-// WARN(Jack): Use of the tagCustom36h11 and all settings are hardcoded here! This means no on can select another
+// NOTE(Jack): Use of the tagCustom36h11 and all settings are hardcoded here! This means no on can select another
 // family. Find a way to make this configurable if possible, but it will likely require recompilation.
 AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size)
     : TargetExtractor(pattern_size),
@@ -101,7 +83,7 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
 
     Eigen::MatrixX2d corners{4 * std::size(raw_detections), 2};
     for (size_t i{0}; i < std::size(raw_detections); ++i) {
-        // ERROR(Jack): The homography can launch the corners outside the bound of the image, this is currently not
+        // WARN(Jack): The homography can launch the corners outside the bound of the image, this is currently not
         // handled, and how that shows up in our code is not yet clear (2.10.2025).
         Eigen::Matrix<double, 4, 2> const extraction_corners{
             EstimateExtractionCorners(raw_detections[i].H, std::sqrt(tag_family_.tag_family->nbits))};
@@ -114,22 +96,15 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
     return FeatureFrame{corners, CornerIndices(pattern_size_, raw_detections)};
 }
 
-// TODO(Jack): This is not a very eloquent implementation, but its gets the job done for now and the tests pass!
+// TODO(Jack): This is not a very eloquent implementation... If there is a way to do this using some more expressive
+// matrix math or simple indexing lets do that :)
 Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
                                                    std::vector<AprilTagDetection> const& detections) {
-    // NOTE(Jack): Multiplied by two because every tag has four corners/points/pixels (two in each direction)
-    Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
-
-    // TODO(Jack): The logic in this method about indicing and masking is similar to the code in the eigen utility
-    // MaskIndices, keep your eyes peeled for optimization or code/idea reuse
     std::vector<int> mask_vec;
-    mask_vec.reserve(grid.rows());
     for (auto const& detection : detections) {
-        // WARN(Jack): THIS WILL ASSUME WE ARE ALWAYS STARTING from a tag ID of zero
         int const i{static_cast<int>(detection.id / pattern_size.width)};
         int const j{detection.id % pattern_size.width};
 
-        // TODO(Jack): Align my imagintation of the order and indices of the corners with the april tag implementation
         int const corner_0{(2 * (2 * i) * pattern_size.width) + (2 * j)};
         int const corner_1{corner_0 + 1};
         int const corner_2{corner_0 + (2 * pattern_size.width)};
@@ -141,9 +116,8 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
         mask_vec.push_back(corner_3);
     }
 
-    // COPY AND PASTED FROM EIGEN UTILTIES MASK FUNCTION
-    Eigen::ArrayXi mask(std::size(mask_vec));
-    mask = Eigen::Map<Eigen::ArrayXi>(mask_vec.data(), std::size(mask_vec));
+    Eigen::ArrayX2i const grid{GenerateGridIndices(2 * pattern_size.height, 2 * pattern_size.width)};
+    Eigen::ArrayXi const mask{ToEigen(mask_vec)};
 
     return grid(mask, Eigen::all);
 }
@@ -161,7 +135,9 @@ Eigen::ArrayX2i AprilGrid3Extractor::CornerIndices(cv::Size const& pattern_size,
 // ADD , int const num_bits
 Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::EstimateExtractionCorners(Eigen::Matrix3d const& H,
                                                                            int const sqrt_num_bits) {
-    Eigen::Matrix<double, 4, 2> const canonical_corners{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}};
+    // NOTE(Jack): These corners have been reordered from how they are listed in the april tag documentation. The
+    // current ordering matches our generated targets grid row/column indexing.
+    Eigen::Matrix<double, 4, 2> const canonical_corners{{-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
     double const corner_offset_scale{(sqrt_num_bits / 2.0 + 2.0) / (sqrt_num_bits / 2.0 + 1.0)};
 
     Eigen::Matrix<double, 4, 2> extraction_corners{

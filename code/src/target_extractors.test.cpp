@@ -91,10 +91,10 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
 
     Eigen::MatrixX2d const& pixels{target->pixels};
     EXPECT_EQ(pixels.rows(), 4);  // One tag
-    Eigen::Matrix<double, 4, 2> const gt_pixels{{19.819417953491211, 119.27910614013672},
-                                                {119.13014984130859, 119.13014984130859},
+    Eigen::Matrix<double, 4, 2> const gt_pixels{{19.685731887817383, 19.685731887817383},
                                                 {119.27910614013672, 19.819416046142578},
-                                                {19.685731887817383, 19.685731887817383}};
+                                                {19.819417953491211, 119.27910614013672},
+                                                {119.13014984130859, 119.13014984130859}};
     EXPECT_TRUE(pixels.isApprox(gt_pixels, 1e-6));
 }
 

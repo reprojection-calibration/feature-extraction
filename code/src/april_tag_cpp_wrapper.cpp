@@ -44,7 +44,7 @@ std::vector<AprilTagDetection> AprilTagDetector::Detect(cv::Mat const& gray) con
     zarray_t* const raw_detections{apriltag_detector_detect(tag_detector, &raw_gray)};
 
     std::vector<AprilTagDetection> detections;
-    for (int i = 0; i < raw_detections->size; i++) {
+    for (int i{0}; i < raw_detections->size; i++) {
         apriltag_detection_t* raw_detection;
         zarray_get(raw_detections, i, &raw_detection);
         detections.emplace_back(*raw_detection);

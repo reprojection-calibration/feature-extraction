@@ -33,7 +33,7 @@ int main() {
 
                 std::string const text{"(" + std::to_string(indices.row(i)[0]) + ", " +
                                        std::to_string(indices.row(i)[1]) + ")"};
-                cv::putText(frame, text, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), cv::FONT_HERSHEY_COMPLEX, 0.5,
+                cv::putText(frame, text, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), cv::FONT_HERSHEY_COMPLEX, 0.4,
                             cv::Scalar(255, 255, 255), 1);
             }
         }
