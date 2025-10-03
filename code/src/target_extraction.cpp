@@ -38,10 +38,10 @@ std::unique_ptr<TargetExtractor> CreateTargetExtractor(YAML::Node const& target_
     if (type == TargetType::Checkerboard) {
         return std::make_unique<CheckerboardExtractor>(pattern_size, unit_dimension);
     } else if (type == TargetType::CircleGrid) {
-        if (not target_config["cirle_grid_options"]["asymmetric"]) {
+        if (not target_config["circle_grid_options"]["asymmetric"]) {
             throw std::runtime_error("The target cirle_grid_options.asymmetric was not specified.");
         }
-        bool const asymmetric{target_config["cirle_grid_options"]["asymmetric"].as<bool>()};
+        bool const asymmetric{target_config["circle_grid_options"]["asymmetric"].as<bool>()};
 
         return std::make_unique<CircleGridExtractor>(pattern_size, unit_dimension, asymmetric);
     } else {

@@ -9,12 +9,12 @@ class YamlConfigTestFixture : public ::testing::Test {
    public:
     YamlConfigTestFixture()
         : checkerboard_{BuildBaseNode("checkerboard", 3, 4, 0.05)},
-          april_grid3_{BuildBaseNode("april_grid3_", 3, 4, 0.05)} {
+          april_grid3_{BuildBaseNode("april_grid3", 3, 4, 0.05)} {
         // NOTE(Jack): Because circle grid is the only one with custom options we just build it here manually in the
         // constructor. If the target specifications ever get more complex we can build methods to do this more
         // discretely.
         circle_grid_ = BuildBaseNode("circle_grid", 3, 4, 0.05);
-        circle_grid_["cirle_grid_options"]["asymmetric"] = false;
+        circle_grid_["circle_grid_options"]["asymmetric"] = false;
     }
 
     YAML::Node checkerboard_;

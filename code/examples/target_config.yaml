@@ -1,10 +1,10 @@
+# NOTE(Jack): Currently there are no other sub options except for circle grid! For april grid3 the tag family is at
+# this time hardcoded but in future we could add another section like april_grid3_options. It should be clear to the
+# that these options are only read when the target.type matches the options.
+
 target:
-  type: "april_grid3" # checkerboard, circle_grid, april_grid3
-  pattern_size: [ 3,4 ] # [row, column]
-  unit_dimension: # (m) different measurement for each target
-  cirle_grid_options:
-    asymmetric: false
-  # NOTE(Jack): Currently there are no other sub options except for circle grid! For april grid3 the tag family is at
-  # this time hardcoded
-  # april_grid3_options:
-  #   tag_family: custom25h9
+  type: "circle_grid" # checkerboard, circle_grid, april_grid3
+  pattern_size: [ 6,7 ] # [row, column]
+  unit_dimension: 0.05 # (m) different measurement for each target
+  circle_grid_options:
+    asymmetric: true
