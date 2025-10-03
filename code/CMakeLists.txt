@@ -55,7 +55,7 @@ set(EXAMPLES
         examples/aprilgrid3_webcam_demo.cpp
 )
 foreach (EXAMPLE IN LISTS EXAMPLES)
-    get_filename_component(EXAMPLE_NAME ${EXAMPLE} NAME)
+    get_filename_component(EXAMPLE_NAME ${EXAMPLE} NAME_WLE)
     add_executable(${EXAMPLE_NAME} ${EXAMPLE})
     target_link_libraries(${EXAMPLE_NAME}
             ${PROJECT_NAME}
@@ -80,7 +80,7 @@ set(TESTS
         src/utilities.test.cpp
 )
 foreach (TEST IN LISTS TESTS)
-    get_filename_component(TEST_NAME ${TEST} NAME)
+    get_filename_component(TEST_NAME ${TEST} NAME_WLE)
     add_executable(${TEST_NAME} ${TEST})
     target_link_libraries(${TEST_NAME}
             GTest::gtest_main
