@@ -2,6 +2,7 @@
 
 set -eou pipefail
 
+# NOTE(Jack): This usage instruction is not fully consistent with the run scripts usage because it was copy and pasted from the build script.
 usage() {
     echo "Usage: $0 -t <target-stage>"
     echo "  -t <target-stage>     : Target build stage (e.g., build, development)"
@@ -21,5 +22,5 @@ IMAGE=feature-extraction
 SCRIPT_FOLDER="$(dirname "$(realpath -s "$0")")"
 TAG=${IMAGE}:${TARGET_STAGE}
 
-echo "Running container of image with tag '$TAG'..."
+echo "Running container from image with tag '$TAG'..."
 docker run --entrypoint="" --interactive --rm --tty ${TAG} /bin/bash

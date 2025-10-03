@@ -38,6 +38,8 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
+    std::cout << "\n\tPress any key to close the window and end the demo.\n" << std::endl;
+
     cv::Mat frame, gray;
     while (true) {
         cap >> frame;

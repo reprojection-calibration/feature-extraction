@@ -45,7 +45,7 @@ FROM base-stage AS release-stage
 # TODO(Jack): We should actually use cmakes install capability instead of just copying over the entire build folder!
 COPY --from=build-stage /buildroot/build /buildroot/build
 
-ENTRYPOINT ["/buildroot/build/aprilgrid3_webcam_demo", "-c", "/temporary/code/examples/target_config.yaml"]
+ENTRYPOINT ["/buildroot/build/webcam_demo", "-c", "/temporary/code/examples/target_config.yaml"]
 
 FROM base-stage AS development-stage
 

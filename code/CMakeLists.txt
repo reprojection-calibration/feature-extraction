@@ -52,7 +52,7 @@ target_link_directories(${PROJECT_NAME}  PUBLIC
 )
 
 set(EXAMPLES
-        examples/aprilgrid3_webcam_demo.cpp
+        examples/webcam_demo.cpp
 )
 foreach (EXAMPLE IN LISTS EXAMPLES)
     get_filename_component(EXAMPLE_NAME ${EXAMPLE} NAME_WLE)
