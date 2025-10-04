@@ -125,7 +125,7 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3Extractor) {
     EXPECT_TRUE(indices.isApprox(gt_indices));
 }
 
-TEST_F(AprilTagTestFixture, TestAprilGrid3VisibleGeometry) {
+TEST(TargetExtractors, TestAprilGrid3VisibleGeometry) {
     cv::Size const pattern_size{3, 2};
 
     // Make a simulated set of detections from a 3x2 AprilGrid3 - we only need the ID here
@@ -150,7 +150,7 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3VisibleGeometry) {
     EXPECT_TRUE(mask2.bottomRows(4).isApprox(Eigen::Array<int, 4, 1>{16, 17, 22, 23}));  // Same as before removal
 }
 
-TEST_F(AprilTagTestFixture, TestAprilGrid3CornerPositions) {
+TEST(TargetExtractors, TestAprilGrid3CornerPositions) {
     // Should be even because aprilgrids always have even points in each direction because it is always a multiple of
     // two of the board's tag rows/columns
     Eigen::ArrayX2i const grid{GenerateGridIndices(6, 8)};
@@ -159,4 +159,7 @@ TEST_F(AprilTagTestFixture, TestAprilGrid3CornerPositions) {
     EXPECT_EQ(points.rows(), grid.rows());
     EXPECT_TRUE(points.row(0).isApprox(Eigen::Vector3d{0, 0, 0}.transpose()));
     EXPECT_TRUE(points.row(47).isApprox(Eigen::Vector3d{2.6, 1.9, 0}.transpose()));
-};
+}
+
+
+
