@@ -1,5 +1,17 @@
 # Feature Extraction
 
+## Dockerized Webcam Demo
+
+> NOTE: The demo has been tested on an LG laptop running Ubuntu 20.04 with CLion 2025.2.3.
+
+Build the release image containing the webcam demo,
+
+    ./building/local/build_image.sh -t release
+
+Run the demo,
+
+    ./building/local/run_webcam_demo.sh
+
 ## Local Development
 
 The project is developed using the CLion IDE. Thanks to
