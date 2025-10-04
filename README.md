@@ -12,6 +12,8 @@ Run the demo,
 
     ./building/local/run_webcam_demo.sh
 
+Press any key to close the window and end the demo. 
+
 ## Local Development
 
 The project is developed using the CLion IDE. Thanks to
