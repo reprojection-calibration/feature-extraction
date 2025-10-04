@@ -19,8 +19,7 @@ while getopts ":t:" opt; do
 done
 
 IMAGE=feature-extraction
-SCRIPT_FOLDER="$(dirname "$(realpath -s "$0")")"
 TAG=${IMAGE}:${TARGET_STAGE}
 
 echo "Running container from image with tag '$TAG'..."
-docker run --entrypoint="" --interactive --rm --tty ${TAG} /bin/bash
+docker run --entrypoint="" --interactive --rm --tty "${TAG}" /bin/bash

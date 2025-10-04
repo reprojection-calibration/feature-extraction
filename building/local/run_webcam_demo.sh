@@ -14,5 +14,5 @@ docker run \
   --rm \
   --volume /dev:/dev \
   --volume /tmp/.X11-unix:/tmp/.X11-unix \
-  --volume ${SCRIPT_FOLDER}/../../:/temporary \
+  --volume "${SCRIPT_FOLDER}"/../../:/temporary \
   ${TAG}
