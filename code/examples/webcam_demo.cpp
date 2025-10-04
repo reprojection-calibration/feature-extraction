@@ -1,3 +1,6 @@
+#include <yaml-cpp/yaml.h>
+
+#include <algorithm>
 #include <iostream>
 
 #include "feature_extraction/target_extraction.hpp"
@@ -9,14 +12,33 @@
 
 using namespace reprojection_calibration::feature_extraction;
 
-int main() {
-    cv::VideoCapture cap(0);
-    if (not cap.isOpened()) {
-        std::cerr << "Couldn't open video capture device" << std::endl;
-        return -1;
+// Adopted from https://stackoverflow.com/questions/865668/parsing-command-line-arguments-in-c
+char* GetCommandOption(char** begin, char** end, const std::string& option) {
+    char** itr = std::find(begin, end, option);
+    if (itr != end && ++itr != end) {
+        return *itr;
     }
 
-    std::unique_ptr<TargetExtractor> const extractor{CreateTargetExtractor(TargetType::AprilGrid3)};
+    return 0;
+}
+
+int main(int argc, char* argv[]) {
+    char const* const filename{GetCommandOption(argv, argv + argc, "-c")};
+    if (not filename) {
+        std::cerr << "Target configuration yaml not provided! (-c <target_config_yaml>)" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    YAML::Node const config{YAML::LoadFile(filename)};
+    std::unique_ptr<TargetExtractor> const extractor{CreateTargetExtractor(config["target"])};
+
+    cv::VideoCapture cap(0);
+    if (not cap.isOpened()) {
+        std::cerr << "Couldn't open video capture device!" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << "\n\tPress any key to close the window and end the demo.\n" << std::endl;
 
     cv::Mat frame, gray;
     while (true) {
@@ -44,5 +66,5 @@ int main() {
         }
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

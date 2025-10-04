@@ -16,6 +16,7 @@ set(apriltag_INCLUDE_DIRS "${apriltag_INCLUDE_DIRS}/apriltag")
 
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 set(SRC_FILES
         src/april_tag_cpp_wrapper.cpp
@@ -33,11 +34,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
         $<INSTALL_INTERFACE:include/>
         ${OpenCV_INCLUDE_DIRS}
+        ${YAML_CPP_INCLUDE_DIR}
 )
 target_link_libraries(${PROJECT_NAME} PUBLIC
         Eigen3::Eigen
         ${apriltag_LIBRARIES}
         ${OpenCV_LIBS}
+        ${YAML_CPP_LIBRARIES}
 )
 # For inexplicable reasons, the docker build-stage build will fail if we do not include this link directory...
 # Without this it works fine in CLion, but when we build it manually it gives us problems. I should note that I
@@ -49,10 +52,10 @@ target_link_directories(${PROJECT_NAME}  PUBLIC
 )
 
 set(EXAMPLES
-        examples/aprilgrid3_webcam_demo.cpp
+        examples/webcam_demo.cpp
 )
 foreach (EXAMPLE IN LISTS EXAMPLES)
-    get_filename_component(EXAMPLE_NAME ${EXAMPLE} NAME)
+    get_filename_component(EXAMPLE_NAME ${EXAMPLE} NAME_WLE)
     add_executable(${EXAMPLE_NAME} ${EXAMPLE})
     target_link_libraries(${EXAMPLE_NAME}
             ${PROJECT_NAME}
@@ -77,7 +80,7 @@ set(TESTS
         src/utilities.test.cpp
 )
 foreach (TEST IN LISTS TESTS)
-    get_filename_component(TEST_NAME ${TEST} NAME)
+    get_filename_component(TEST_NAME ${TEST} NAME_WLE)
     add_executable(${TEST_NAME} ${TEST})
     target_link_libraries(${TEST_NAME}
             GTest::gtest_main
