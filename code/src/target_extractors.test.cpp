@@ -175,12 +175,11 @@ TEST(TargetExtractors, TestErrantDetection) {
     detection_i.id = 0;
     detections.push_back(detection_i);
 
-    int const max_id{pattern_size.width * pattern_size.height - 1};
-    EXPECT_TRUE(AprilGrid3Extractor::ErrantDetection(max_id, detections));
+    EXPECT_TRUE(AprilGrid3Extractor::ErrantDetection(pattern_size, detections));
     detections.pop_back();  // Remove is to test another condition below
 
     // Add an ID which is larger than the board - could happen if errant tags are visible in background scene
     detection_i.id = 100;
     detections.push_back(detection_i);
-    EXPECT_TRUE(AprilGrid3Extractor::ErrantDetection(max_id, detections));
+    EXPECT_TRUE(AprilGrid3Extractor::ErrantDetection(pattern_size, detections));
 }

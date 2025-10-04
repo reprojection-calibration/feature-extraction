@@ -90,7 +90,8 @@ AprilGrid3Extractor::AprilGrid3Extractor(cv::Size const& pattern_size, const dou
 
 std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) const {
     std::vector<AprilTagDetection> const raw_detections{tag_detector_.Detect(image)};
-    if (std::size(raw_detections) == 0) {
+    // TODO(Jack): Should we provide output to the terminal that we had errant detections?
+    if (std::size(raw_detections) == 0 or ErrantDetection(pattern_size_, raw_detections)) {
         return std::nullopt;
     }
 
@@ -151,7 +152,7 @@ Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& ind
     return points;
 }
 
-bool AprilGrid3Extractor::ErrantDetection(int const max_id, std::vector<AprilTagDetection> detections) {
+bool AprilGrid3Extractor::ErrantDetection(cv::Size const& pattern_size, std::vector<AprilTagDetection> detections) {
     // Adopted from https://stackoverflow.com/questions/46477764/check-stdvector-has-duplicates
     std::sort(detections.begin(), detections.end(),
               [](AprilTagDetection const& a, AprilTagDetection const& b) { return a.id < b.id; });
@@ -164,6 +165,7 @@ bool AprilGrid3Extractor::ErrantDetection(int const max_id, std::vector<AprilTag
         return true;
     }
 
+    int const max_id{(pattern_size.width * pattern_size.height) - 1};
     bool const out_of_range_id{detections.back().id > max_id};
     if (out_of_range_id) {
         return true;

@@ -41,7 +41,7 @@ class AprilGrid3Extractor : public TargetExtractor {
 
     static Eigen::MatrixX3d CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension);
 
-    static bool ErrantDetection(int const max_id, std::vector<AprilTagDetection> detections);
+    static bool ErrantDetection(cv::Size const& pattern_size, std::vector<AprilTagDetection> detections);
 
    private:
     // TODO(Jack): Consider making these two extraction functions public and testing them!
