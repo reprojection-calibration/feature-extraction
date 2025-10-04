@@ -170,6 +170,9 @@ TEST(TargetExtractors, TestErrantDetection) {
         detections.push_back(detection_i);
     }
 
+    // No problems yet, should not detect any problems :)
+    EXPECT_FALSE(AprilGrid3Extractor::ErrantDetection(pattern_size, detections));
+
     // Add a duplicated ID - could happen if errant tags are visible in background scene
     AprilTagDetection detection_i;
     detection_i.id = 0;
