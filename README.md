@@ -43,12 +43,38 @@ you can delete the other auto generated folder that will no longer be used.
 
 To confirm your CMake project setup is complete in the top bar you can select the detected configurations and build,
 run, or debug them. Select the "All CTest" configuration and then hit the green play button to "Run" the "All CTest"
-configuration. You should see all tests exectute and pass in the bottom window of the IDE.
+configuration. You should see all tests execute and pass in the bottom window of the IDE.
 
--e DISPLAY=:0.0 --entrypoint= -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev:/dev --privileged --rm
+In the "Run / Debug Configurations" dropdown menu where we selected "All CTest" we can also select all other targets (
+tests, libraries and executables) in the project's CMakeLists to build them individually. This is extremely practical
+when working on large integrated projects.
 
-Program arguments: -c target_config.yaml
-Working directory: <example directory>
+### The Webcam Example 
+
+> NOTE: The demo has been tested on an LG laptop running Ubuntu 20.04 with CLion 2025.2.3.
+
+To get the webcam example to work we need to change both the toolchain and CMake configuration. 
+
+Go to the toolchain settings ("Settings" > "Build, Execution, Development" > "Toolchains"), make sure the feature 
+extraction tool chain we built earlier is selected, and select the gear shaped "Browse" button for the "Container 
+Settings" field. In the pop up window copy and paste the below settings in the "Run options" field, ignoring any already 
+set options.
+
+    -e DISPLAY=:0.0 --entrypoint= -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev:/dev --privileged --rm
+
+Hit "OK" to exit the container settings window and "OK" again to apply the settings to the toolchain and exit 
+the settings. 
+
+Now with the toolchain setup properly, open the "Run / Debug Configurations" dropdown at the top of the window. At the 
+very bottom of the dropdown window select "Edit Configurations..." In the window that opens select the "webcam_demo" 
+configuration. In the "Program arguments" field enter "-c target_config.yaml", this is the command line argument which 
+is passed to the executable to tell it where the configuration file is located. In the "Working directory" field you 
+should select the "Browse..." file explorer icon and select the repositories `code/examples` folder. Then hit the "OK" 
+button to save the setting and close the window.
+
+Now we can run the webcam demo! Select the "webcam_demo" configuration in the "Run / Debug Configurations" dropdown and 
+then hit the green play button "Run 'webcam_demo'". Hold the target which corresponds to the target configured in 
+`code/examples/target_config.yaml` (AprilGrid3 by default) and observe the detections.
 
 
 
