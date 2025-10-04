@@ -1,7 +1,6 @@
-#include "april_tag_cpp_wrapper.hpp"
-
 #include <gtest/gtest.h>
 
+#include "april_tag_cpp_wrapper.hpp"
 #include "test_fixture_april_tag.hpp"
 
 using namespace reprojection_calibration::feature_extraction;

@@ -1,6 +1,6 @@
 #include "target_extractors.hpp"
 
-#include <iostream>
+#include <algorithm>
 
 extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
@@ -149,6 +149,27 @@ Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& ind
     points.col(2).setZero();
 
     return points;
+}
+
+bool AprilGrid3Extractor::ErrantDetection(int const max_id, std::vector<AprilTagDetection> detections) {
+    // Adopted from https://stackoverflow.com/questions/46477764/check-stdvector-has-duplicates
+    std::sort(detections.begin(), detections.end(),
+              [](AprilTagDetection const& a, AprilTagDetection const& b) { return a.id < b.id; });
+
+    bool const has_duplicates{std::adjacent_find(detections.begin(), detections.end(),
+                                                 [](AprilTagDetection const& a, AprilTagDetection const& b) {
+                                                     return a.id == b.id;
+                                                 }) != std::cend(detections)};
+    if (has_duplicates) {
+        return true;
+    }
+
+    bool const out_of_range_id{detections.back().id > max_id};
+    if (out_of_range_id) {
+        return true;
+    }
+
+    return false;
 }
 
 // From the apriltag documentation (https://github.com/AprilRobotics/apriltag/blob/master/apriltag.h)

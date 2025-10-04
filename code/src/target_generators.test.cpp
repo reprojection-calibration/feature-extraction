@@ -1,7 +1,6 @@
-#include "target_generators.hpp"
-
 #include <gtest/gtest.h>
 
+#include "target_generators.hpp"
 #include "test_fixture_april_tag.hpp"
 
 using namespace reprojection_calibration::feature_extraction;

@@ -1,7 +1,6 @@
-#include "target_extractors.hpp"
-
 #include <gtest/gtest.h>
 
+#include "target_extractors.hpp"
 #include "target_generators.hpp"
 #include "test_fixture_april_tag.hpp"
 #include "utilities.hpp"  // REMOVE
@@ -161,5 +160,27 @@ TEST(TargetExtractors, TestAprilGrid3CornerPositions) {
     EXPECT_TRUE(points.row(47).isApprox(Eigen::Vector3d{2.6, 1.9, 0}.transpose()));
 }
 
+TEST(TargetExtractors, TestErrantDetection) {
+    cv::Size const pattern_size{3, 2};
 
+    std::vector<AprilTagDetection> detections;
+    for (int i{0}; i < pattern_size.width * pattern_size.height; ++i) {
+        AprilTagDetection detection_i;
+        detection_i.id = i;
+        detections.push_back(detection_i);
+    }
 
+    // Add a duplicated ID - could happen if errant tags are visible in background scene
+    AprilTagDetection detection_i;
+    detection_i.id = 0;
+    detections.push_back(detection_i);
+
+    int const max_id{pattern_size.width * pattern_size.height - 1};
+    EXPECT_TRUE(AprilGrid3Extractor::ErrantDetection(max_id, detections));
+    detections.pop_back();  // Remove is to test another condition below
+
+    // Add an ID which is larger than the board - could happen if errant tags are visible in background scene
+    detection_i.id = 100;
+    detections.push_back(detection_i);
+    EXPECT_TRUE(AprilGrid3Extractor::ErrantDetection(max_id, detections));
+}

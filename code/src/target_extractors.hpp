@@ -41,6 +41,8 @@ class AprilGrid3Extractor : public TargetExtractor {
 
     static Eigen::MatrixX3d CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension);
 
+    static bool ErrantDetection(int const max_id, std::vector<AprilTagDetection> detections);
+
    private:
     // TODO(Jack): Consider making these two extraction functions public and testing them!
     static Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H, int const sqrt_num_bits);
