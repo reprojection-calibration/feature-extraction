@@ -120,23 +120,12 @@ std::optional<FeatureFrame> AprilGrid3Extractor::Extract(cv::Mat const& image) c
 // which points are visible and which are not.
 Eigen::ArrayXi AprilGrid3Extractor::VisibleGeometry(cv::Size const& pattern_size,
                                                     std::vector<AprilTagDetection> const& detections) {
-    std::vector<int> mask;
-    for (auto const& detection : detections) {
-        int const i{static_cast<int>(detection.id / pattern_size.width)};
-        int const j{detection.id % pattern_size.width};
-
-        int const corner_0{(2 * (2 * i) * pattern_size.width) + (2 * j)};
-        int const corner_1{corner_0 + 1};
-        int const corner_2{corner_0 + (2 * pattern_size.width)};
-        int const corner_3{corner_2 + 1};
-
-        mask.push_back(corner_0);
-        mask.push_back(corner_1);
-        mask.push_back(corner_2);
-        mask.push_back(corner_3);
+    Eigen::ArrayXi mask{4 * std::size(detections), 1};
+    for (size_t i{0}; i < std::size(detections); ++i) {
+        mask.block<4, 1>(4 * i, 0) = ToAprilGridIds(pattern_size, detections[i].id);
     }
 
-    return ToEigen(mask);
+    return mask;
 }
 
 Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension) {
@@ -211,6 +200,18 @@ Eigen::Matrix<double, 4, 2> AprilGrid3Extractor::RefineCorners(cv::Mat const& im
                      cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
 
     return refined_extraction_corners.cast<double>();
+}
+
+Eigen::Array<int, 4, 1> AprilGrid3Extractor::ToAprilGridIds(cv::Size const& pattern_size, int const detection_id) {
+    int const i{static_cast<int>(detection_id / pattern_size.width)};
+    int const j{detection_id % pattern_size.width};
+
+    int const corner_0{(2 * (2 * i) * pattern_size.width) + (2 * j)};
+    int const corner_1{corner_0 + 1};
+    int const corner_2{corner_0 + (2 * pattern_size.width)};
+    int const corner_3{corner_2 + 1};
+
+    return {corner_0, corner_1, corner_2, corner_3};
 }
 
 }  // namespace reprojection_calibration::feature_extraction

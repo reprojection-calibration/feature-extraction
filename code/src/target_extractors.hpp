@@ -44,11 +44,13 @@ class AprilGrid3Extractor : public TargetExtractor {
     static bool ErrantDetection(cv::Size const& pattern_size, std::vector<AprilTagDetection> detections);
 
    private:
-    // TODO(Jack): Consider making these two extraction functions public and testing them!
+    // TODO(Jack): Consider making these three functions public and testing them!
     static Eigen::Matrix<double, 4, 2> EstimateExtractionCorners(Eigen::Matrix3d const& H, int const sqrt_num_bits);
 
     static Eigen::Matrix<double, 4, 2> RefineCorners(cv::Mat const& image,
                                                      Eigen::Matrix<double, 4, 2> const& extraction_corners);
+
+    static Eigen::Array<int, 4, 1> ToAprilGridIds(cv::Size const& pattern_size, int const detection_id);
 
     AprilTagFamily tag_family_;
     AprilTagDetector tag_detector_;
