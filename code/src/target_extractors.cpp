@@ -154,13 +154,11 @@ Eigen::MatrixX3d AprilGrid3Extractor::CornerPositions(Eigen::ArrayX2i const& ind
 
 bool AprilGrid3Extractor::ErrantDetection(cv::Size const& pattern_size, std::vector<AprilTagDetection> detections) {
     // Adopted from https://stackoverflow.com/questions/46477764/check-stdvector-has-duplicates
-    std::sort(detections.begin(), detections.end(),
-              [](AprilTagDetection const& a, AprilTagDetection const& b) { return a.id < b.id; });
+    std::sort(std::begin(detections), std::end(detections), [](auto const& a, auto const& b) { return a.id < b.id; });
 
-    bool const has_duplicates{std::adjacent_find(detections.begin(), detections.end(),
-                                                 [](AprilTagDetection const& a, AprilTagDetection const& b) {
-                                                     return a.id == b.id;
-                                                 }) != std::cend(detections)};
+    bool const has_duplicates{std::adjacent_find(std::cbegin(detections), std::cend(detections),
+                                                 [](auto const& a, auto const& b) { return a.id == b.id; }) !=
+                              std::cend(detections)};
     if (has_duplicates) {
         return true;
     }
