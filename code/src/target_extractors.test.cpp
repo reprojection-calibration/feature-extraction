@@ -186,3 +186,17 @@ TEST(TargetExtractors, TestErrantDetection) {
     detections.push_back(detection_i);
     EXPECT_TRUE(AprilGrid3Extractor::ErrantDetection(pattern_size, detections));
 }
+
+TEST(TargetExtractors, TestGoodCornerMask) {
+    // TODO(Jack): Confirm the order that comes from our functions/apriltag detector is consistent and makes a rectangle
+    Eigen::Matrix<double, 4, 2> corners{{0, 0}, {10, 0}, {10, 10}, {0, 10}};
+    Eigen::Matrix<double, 4, 2> refined_corners{{0, 0.5}, {10.5, 0}, {20, 30}, {0, 10}};
+    Eigen::Matrix<double, 4, 2> extracted_pixels{{1, 1}, {9, 1}, {9, 9}, {1, 9}};
+
+    double const perimeter{(corners.row(0) - corners.row(1)).norm() + (corners.row(1) - corners.row(2)).norm() +
+                           (corners.row(2) - corners.row(3)).norm() + (corners.row(3) - corners.row(0)).norm()};
+
+
+    double const pixels_per_bit{perimeter / 32};
+    std::cout << pixels_per_bit << std::endl;
+}
