@@ -196,7 +196,6 @@ TEST(TargetExtractors, TestGoodCornerMask) {
     double const perimeter{(corners.row(0) - corners.row(1)).norm() + (corners.row(1) - corners.row(2)).norm() +
                            (corners.row(2) - corners.row(3)).norm() + (corners.row(3) - corners.row(0)).norm()};
 
-
     double const pixels_per_bit{perimeter / 32};
     std::cout << pixels_per_bit << std::endl;
 }
