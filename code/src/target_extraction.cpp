@@ -1,52 +1,49 @@
 #include "feature_extraction/target_extraction.hpp"
 
-#include <stdexcept>
+#include "types/calibration_types.hpp"
+#include "types/enums.hpp"
 
 #include "target_extractors.hpp"
+#include "utilities.hpp"
 
-namespace reprojection_calibration::feature_extraction {
+namespace reprojection::feature_extraction {
 
-TargetType ToEnum(std::string const& target_type) {
-    if (target_type == "checkerboard") {
-        return TargetType::Checkerboard;
-    } else if (target_type == "circle_grid") {
-        return TargetType::CircleGrid;
-    } else if (target_type == "april_grid3") {
-        return TargetType::AprilGrid3;
+std::optional<ExtractedTarget> TargetExtractor::Extract(cv::Mat const& img) {
+    cv::Mat const img_gray{ToGray(img)};
+
+    return ExtractImplementation(img_gray);
+}
+
+std::unique_ptr<TargetExtractor> CreateTargetExtractor(TargetInfo const& target_info) {
+    cv::Size const pattern_size{target_info.width, target_info.height};
+
+    if (target_info.target_type == TargetType::Checkerboard) {
+        return std::make_unique<CheckerboardExtractor>(pattern_size, target_info.unit_dimension);
+    } else if (target_info.target_type == TargetType::CircleGrid) {
+        return std::make_unique<CircleGridExtractor>(pattern_size, target_info.unit_dimension, target_info.asymmetric);
+    } else if (target_info.target_type == TargetType::Aprilgrid3) {
+        return std::make_unique<Aprilgrid3Extractor>(pattern_size, target_info.unit_dimension);
     } else {
-        throw std::runtime_error("The requested target type is not part of the TargetType enum parsing.");
+        throw std::runtime_error  // LCOV_EXCL_LINE
+            ("LIBRARY IMPLEMENTATION ERROR - CreateTargetExtractor() invalid feature extractor type: " +  // LCOV_EXCL_LINE
+             ToString(target_info.target_type));  // LCOV_EXCL_LINE
     }
 }
 
-std::unique_ptr<TargetExtractor> CreateTargetExtractor(YAML::Node const& target_config) {
-    if (not target_config["type"]) {
-        // TODO(Jack): Does the yaml-cpp library provide us a better error handling mechanism?
-        throw std::runtime_error("The target type was not specified.");
-    }
-    TargetType const type{ToEnum(target_config["type"].as<std::string>())};
+// TODO/WARN(Jack): This functions expects that the image has three channels but that is not enforced anywhere here.
+// What would happen if this was fed a grayscale image or a float image?
+void DrawTarget(ExtractedTarget const& target, cv::Mat const& img) {
+    MatrixX2d const& pixels{target.bundle.pixels};
+    ArrayX2i const& indices{target.indices};
 
-    if (not(target_config["pattern_size"] and target_config["pattern_size"].IsSequence())) {
-        throw std::runtime_error("The target pattern_size was not specified.");
-    }
-    cv::Size const pattern_size{target_config["pattern_size"][1].as<int>(), target_config["pattern_size"][0].as<int>()};
+    for (Eigen::Index i{0}; i < pixels.rows(); ++i) {
+        cv::circle(img, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), 5, cv::Scalar(0, 255, 0), 1, cv::LINE_8);
 
-    if (not target_config["unit_dimension"]) {
-        throw std::runtime_error("The target unit_dimension was not specified.");
-    }
-    double const unit_dimension{target_config["unit_dimension"].as<double>()};  // comes from config file in the future
-
-    if (type == TargetType::Checkerboard) {
-        return std::make_unique<CheckerboardExtractor>(pattern_size, unit_dimension);
-    } else if (type == TargetType::CircleGrid) {
-        if (not target_config["circle_grid_options"]["asymmetric"]) {
-            throw std::runtime_error("The target cirle_grid_options.asymmetric was not specified.");
-        }
-        bool const asymmetric{target_config["circle_grid_options"]["asymmetric"].as<bool>()};
-
-        return std::make_unique<CircleGridExtractor>(pattern_size, unit_dimension, asymmetric);
-    } else {
-        return std::make_unique<AprilGrid3Extractor>(pattern_size, unit_dimension);
+        std::string const text{"(" + std::to_string(indices.row(i)[0]) + ", " + std::to_string(indices.row(i)[1]) +
+                               ")"};
+        cv::putText(img, text, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), cv::FONT_HERSHEY_COMPLEX, 0.4,
+                    cv::Scalar(255, 255, 255), 1);
     }
 }
 
-}  // namespace reprojection_calibration::feature_extraction
+}  // namespace reprojection::feature_extraction

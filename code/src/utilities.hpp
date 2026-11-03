@@ -1,21 +1,17 @@
 #pragma once
 
-#include <Eigen/Dense>
-#include <opencv2/opencv.hpp>
 #include <vector>
 
-namespace reprojection_calibration::feature_extraction {
+#include <opencv2/opencv.hpp>
 
-// Requesting even_only has the effect of allowing us to produce asymmetric grids like those required by the asymmetric
-// circle grid target.
-Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols, bool const even_only = false);
+#include "types/eigen_types.hpp"
 
-Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points);
+namespace reprojection::feature_extraction {
 
-Eigen::ArrayXi ToEigen(std::vector<int> const& vector);
+cv::Mat ToGray(cv::Mat const& image);
 
-Eigen::ArrayXi MaskIndices(Eigen::ArrayXi const& array);
+MatrixX2d ToEigen(std::vector<cv::Point2f> const& points);
 
 double AlternatingSum(int const n, double const increment_1, double const increment_2);
 
-}  // namespace reprojection_calibration::feature_extraction
+}  // namespace reprojection::feature_extraction

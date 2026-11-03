@@ -4,9 +4,11 @@ extern "C" {
 #include <apriltag/apriltag.h>
 }
 
-#include <Eigen/Dense>
 #include <functional>
+
 #include <opencv2/opencv.hpp>
+
+#include "types/eigen_types.hpp"
 
 // This is my attempt to RAII-ify the  C code from the apriltag repository. The main thing I try to fight here is
 // manually having to deallocate memory. For the detector and tag detections themselves that is relatively easy because
@@ -16,7 +18,7 @@ extern "C" {
 // WARN(Jack): The const correctness and memory safety of all apriltag related code is not clear at this point
 // (26.09.2025)! I am 99% sure that there are some big footguns in here, and we will find some "presents" later.
 
-namespace reprojection_calibration::feature_extraction {
+namespace reprojection::feature_extraction {
 
 struct AprilTagFamily {
     // WARN(Jack): Footgun, see comment in .cpp
@@ -36,9 +38,9 @@ struct AprilTagDetection {
     explicit AprilTagDetection(apriltag_detection_t const& raw_detection);
 
     int id{};
-    Eigen::Matrix3d H;
-    Eigen::Vector2d c;
-    Eigen::Matrix<double, 4, 2> p;
+    Matrix3d H;
+    Vector2d c;
+    Matrix42d p;
 };
 
 struct AprilTagDetector {
@@ -61,4 +63,4 @@ struct AprilTagDetector {
     apriltag_detector_t* tag_detector;
 };
 
-}  // namespace reprojection_calibration::feature_extraction
+}  // namespace reprojection::feature_extraction
