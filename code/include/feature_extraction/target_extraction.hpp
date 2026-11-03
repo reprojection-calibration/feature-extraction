@@ -5,9 +5,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "types/algorithm_types.hpp"
-#include "types/calibration_types.hpp"
-#include "types/eigen_types.hpp"
+#include "feature_extraction/types.hpp"
 
 namespace reprojection::feature_extraction {
 
@@ -27,8 +25,8 @@ class TargetExtractor {
    protected:
     cv::Size pattern_size_;
     double unit_dimension_;
-    ArrayX2i point_indices_;
-    MatrixX3d points_;
+    Eigen::ArrayX2i point_indices_;
+    Eigen::MatrixX3d points_;
 
    private:
     virtual std::optional<ExtractedTarget> ExtractImplementation(cv::Mat const& image) const = 0;

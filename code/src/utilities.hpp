@@ -4,13 +4,13 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "types/eigen_types.hpp"
+#include <Eigen/Dense>
 
 namespace reprojection::feature_extraction {
 
 cv::Mat ToGray(cv::Mat const& image);
 
-MatrixX2d ToEigen(std::vector<cv::Point2f> const& points);
+Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points);
 
 double AlternatingSum(int const n, double const increment_1, double const increment_2);
 

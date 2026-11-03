@@ -17,9 +17,9 @@ cv::Mat GenerateCheckerboard(cv::Size const& pattern_size, int const square_size
     int const width{(square_size_pixels * cols) + white_space_border};
     cv::Mat checkerboard{255 * cv::Mat::ones(height, width, CV_8UC1)};  // Start with white image
 
-    ArrayX2i const grid{eigen_utilities::GenerateGridIndices(rows, cols)};
+    Eigen::ArrayX2i const grid{eigen_utilities::GenerateGridIndices(rows, cols)};
     for (Eigen::Index i{0}; i < grid.rows(); ++i) {
-        Array2i const indices{grid.row(i)};
+        Eigen::Array2i const indices{grid.row(i)};
 
         // This condition gives us an asymmetric grid - like the black (of white) tiles of a checkerboard/chessboard
         if (indices.sum() % 2 == 0) {
@@ -50,12 +50,12 @@ cv::Mat GenerateCircleGrid(cv::Size const& pattern_size, int const circle_radius
                     white_space_border};
     cv::Mat circlgrid{255 * cv::Mat::ones(height, width, CV_8UC1)};
 
-    ArrayX2i const grid{asymmetric
+    Eigen::ArrayX2i const grid{asymmetric
                             ? eigen_utilities::GenerateGridIndices(pattern_size.height, pattern_size.width, true)
                             : eigen_utilities::GenerateGridIndices(pattern_size.height, pattern_size.width, false)};
 
     for (Eigen::Index i{0}; i < grid.rows(); ++i) {
-        Array2i const indices{grid.row(i)};
+        Eigen::Array2i const indices{grid.row(i)};
 
         // ERROR(Jack): THERE IS SOMETHING WRONG! THE WHITE SPACE BORDER IS NOT ONE FULL CIRCLE CIRCUMFERENCE
         cv::Point const center{circle_radius_pixels + (white_space_border / 2) +
@@ -77,9 +77,9 @@ cv::Mat Aprilgrid3Generation::GenerateBoard(int const num_bits, uint64_t const t
     cv::Mat april_board{cv::Mat::zeros(pattern_size.height * april_tag_size_pixels,
                                        pattern_size.width * april_tag_size_pixels, CV_8UC1)};
 
-    ArrayX2i const tag_layout{eigen_utilities::GenerateGridIndices(pattern_size.height, pattern_size.width)};
+    Eigen::ArrayX2i const tag_layout{eigen_utilities::GenerateGridIndices(pattern_size.height, pattern_size.width)};
     for (Eigen::Index i{0}; i < tag_layout.rows(); ++i) {
-        Array2i const indices{tag_layout.row(i)};
+        Eigen::Array2i const indices{tag_layout.row(i)};
 
         // Generate the tag
         uint64_t const tag_code_i{tag_family[(indices(0) * pattern_size.width) + indices(1)]};
@@ -97,12 +97,12 @@ cv::Mat Aprilgrid3Generation::GenerateBoard(int const num_bits, uint64_t const t
 }
 
 cv::Mat Aprilgrid3Generation::GenerateTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixels) {
-    MatrixXi const code_matrix{GenerateCodeMatrix(num_bits, tag_code)};
+    Eigen::MatrixXi const code_matrix{GenerateCodeMatrix(num_bits, tag_code)};
 
     return GenerateTag(bit_size_pixels, code_matrix);
 }
 
-cv::Mat Aprilgrid3Generation::GenerateTag(int const bit_size_pixels, MatrixXi const& code_matrix) {
+cv::Mat Aprilgrid3Generation::GenerateTag(int const bit_size_pixels, Eigen::MatrixXi const& code_matrix) {
     // The "border" is the entire tag area outside of the tag's data area. This consists of several alternating
     // white/black rings (including corner sharpening elements). This is an intrinsic property of the tag as designed
     // for the Aprilgrid3.
@@ -149,9 +149,9 @@ cv::Mat Aprilgrid3Generation::GenerateTag(int const bit_size_pixels, MatrixXi co
     // Fill in all the bits of the data region
     // TODO(Jack): This logic is practically exactly the same as in the checkerboard generation... is there a practical
     // way to DRY ourselves here?
-    ArrayX2i const grid{eigen_utilities::GenerateGridIndices(sqrt_num_bits, sqrt_num_bits)};
+    Eigen::ArrayX2i const grid{eigen_utilities::GenerateGridIndices(sqrt_num_bits, sqrt_num_bits)};
     for (Eigen::Index i{0}; i < grid.rows(); ++i) {
-        Array2i const indices{grid.row(i)};
+        Eigen::Array2i const indices{grid.row(i)};
 
         if (code_matrix(indices(0), indices(1))) {
             cv::Point const top_left_corner{(bit_size_pixels * indices(1)) + border_thickness_pixels,
@@ -170,13 +170,13 @@ cv::Mat Aprilgrid3Generation::GenerateTag(int const bit_size_pixels, MatrixXi co
 // We simplify the implementation a little bit here because we assume that Aprilgrid3 tag structure will always be the
 // same, therefore we only duplicate the actual data code area generation part here. A complete implementation of april
 // tag generation is not found here! Please see the original AprilRobotics repository for that.
-MatrixXi Aprilgrid3Generation::GenerateCodeMatrix(int const num_bits, uint64_t tag_code) {
+Eigen::MatrixXi Aprilgrid3Generation::GenerateCodeMatrix(int const num_bits, uint64_t tag_code) {
     int const sqrt_num_bits{static_cast<int>(std::sqrt(num_bits))};  // Only allow square data encoding areas
 
     // TODO(Jack): Is there a hard reason that we need to do this by generating each quadrant and then rotating 90
     // degrees? If not, and there is time and energy, find an implementation that just lets us iterate over a normal set
     // of indices like one would expect.
-    MatrixXi code_matrix(sqrt_num_bits, sqrt_num_bits);
+    Eigen::MatrixXi code_matrix(sqrt_num_bits, sqrt_num_bits);
     for (int k{0}; k < 4; ++k) {
         for (int i{0}; i <= sqrt_num_bits / 2; ++i) {
             for (int j{i}; j < sqrt_num_bits - 1 - i; ++j) {
@@ -211,8 +211,8 @@ MatrixXi Aprilgrid3Generation::GenerateCodeMatrix(int const num_bits, uint64_t t
     return code_matrix.transpose();
 }
 
-MatrixXi Aprilgrid3Generation::Rotate90(MatrixXi const& matrix, bool const clockwise) {
-    MatrixXi const matrix_star{matrix.transpose()};
+Eigen::MatrixXi Aprilgrid3Generation::Rotate90(Eigen::MatrixXi const& matrix, bool const clockwise) {
+    Eigen::MatrixXi const matrix_star{matrix.transpose()};
 
     return clockwise ? matrix_star.rowwise().reverse().eval() : matrix_star.colwise().reverse().eval();
 }

@@ -24,8 +24,7 @@ set(INCLUDE_DIRECTORIES
 )
 set(PRIVATE_LINK_LIBRARIES
         apriltag::apriltag
-        eigen_utilities
-        types_internal
+        Eigen3::Eigen
 )
 
 add_library(${PROJECT_NAME} SHARED

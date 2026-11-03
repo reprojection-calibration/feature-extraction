@@ -1,27 +1,26 @@
 #pragma once
 
+#include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
-
-#include "types/eigen_types.hpp"
 
 namespace reprojection::feature_extraction {
 
-cv::Mat GenerateCheckerboard(cv::Size const& pattern_size, int const square_size_pixels);
+cv::Mat GenerateCheckerboard(cv::Size const& pattern_size, int  square_size_pixels);
 
-cv::Mat GenerateCircleGrid(cv::Size const& pattern_size, int const circle_radius_pixels,
-                           int const circle_spacing_pixels, bool const asymmetric);
+cv::Mat GenerateCircleGrid(cv::Size const& pattern_size, int  circle_radius_pixels,
+                           int  circle_spacing_pixels, bool  asymmetric);
 
 struct Aprilgrid3Generation {
-    static cv::Mat GenerateBoard(int const num_bits, uint64_t const tag_family[], int const bit_size_pixels,
+    static cv::Mat GenerateBoard(int  num_bits, uint64_t const tag_family[], int  bit_size_pixels,
                                  cv::Size const& pattern_size);
 
-    static cv::Mat GenerateTag(int const num_bits, uint64_t const tag_code, int const bit_size_pixels);
+    static cv::Mat GenerateTag(int  num_bits, uint64_t  tag_code, int  bit_size_pixels);
 
-    static cv::Mat GenerateTag(int const bit_size_pixels, MatrixXi const& code_matrix);
+    static cv::Mat GenerateTag(int  bit_size_pixels, Eigen::MatrixXi const& code_matrix);
 
-    static MatrixXi GenerateCodeMatrix(int const num_bits, uint64_t const tag_code);
+    static Eigen::MatrixXi GenerateCodeMatrix(int  num_bits, uint64_t  tag_code);
 
-    static MatrixXi Rotate90(MatrixXi const& matrix, bool const clockwise = false);
+    static Eigen::MatrixXi Rotate90(Eigen::MatrixXi const& matrix, bool  clockwise = false);
 };
 
 }  // namespace reprojection::feature_extraction
