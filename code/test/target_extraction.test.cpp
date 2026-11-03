@@ -44,7 +44,8 @@ TEST(FeatureExtractionTargetExtraction, TestCreateTargetExtractorAprilgrid3) {
 }
 
 TEST(FeatureExtractionTargetExtraction, TestDrawTarget) {
-    ExtractedTarget const target{{MatrixX2d{{1, 1}, {50, 50}}, MatrixX3d::Random(2, 3)}, ArrayX2i::Random(2, 2)};
+    ExtractedTarget const target{{Eigen::MatrixX2d{{1, 1}, {50, 50}}, Eigen::MatrixX3d::Random(2, 3)},
+                                 Eigen::ArrayX2i::Random(2, 2)};
     cv::Mat const img{cv::Mat::zeros(cv::Size(100, 100), CV_8UC3)};
 
     DrawTarget(target, img);

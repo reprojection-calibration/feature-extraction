@@ -54,6 +54,11 @@ target_link_directories(${PROJECT_NAME} PUBLIC
         ${apriltag_LIBDIR}
 )
 
+include(CTest)
+if (BUILD_TESTING)
+    find_package(GTest REQUIRED)
+endif ()
+
 set(TESTS
         src/april_tag_cpp_wrapper.test.cpp
         src/target_extractors.test.cpp
