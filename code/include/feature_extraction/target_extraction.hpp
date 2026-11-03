@@ -1,23 +1,17 @@
 #pragma once
 
-#include <yaml-cpp/yaml.h>
-
-#include <Eigen/Dense>
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include <optional>
 
-namespace reprojection_calibration::feature_extraction {
+#include "feature_extraction/types.hpp"
 
-struct FeatureFrame {
-    Eigen::MatrixX2d pixels;
-    Eigen::MatrixX3d points;
-    Eigen::ArrayX2i indices;
-};
+namespace reprojection::feature_extraction {
 
 // NOTE(Jack): For detectors which can only detect "whole" boards the Extract() method will simply return the points and
-// indices in their entirety. For targets which can have partial detections (ex. AprilGrid3) their Extract() method will
-// mask out the indices and points which were visible and only return those.
+// indices in their entirety. For targets which can have partial detections (ex. Aprilgrid3) their Extract() method will
+// mask out the indices and points which were visible and only return those. Never assume a target is whole! Always use
+// the indices.
 class TargetExtractor {
    public:
     TargetExtractor(cv::Size const& pattern_size, const double unit_dimension)
@@ -25,20 +19,23 @@ class TargetExtractor {
 
     virtual ~TargetExtractor() = default;
 
-    virtual std::optional<FeatureFrame> Extract(cv::Mat const& image) const = 0;
+    std::optional<ExtractedTarget> Extract(cv::Mat const& img);
 
    protected:
     cv::Size pattern_size_;
     double unit_dimension_;
     Eigen::ArrayX2i point_indices_;
     Eigen::MatrixX3d points_;
+
+   private:
+    virtual std::optional<ExtractedTarget> ExtractImplementation(cv::Mat const& image) const = 0;
 };
 
-enum class TargetType { Checkerboard, CircleGrid, AprilGrid3 };
+std::unique_ptr<TargetExtractor> CreateTargetExtractor(TargetInfo const& target_info);
 
-// NOTE(Jack): One day the argument to CreateTargetExtractor() will be the path to a configuration file. Until then we
-// will probably hard code some things which in the future will come from that file. Maybe there would be a more
-// eloquent way to do this for testing purposes with some test fixture utilities but I am not sure.
-std::unique_ptr<TargetExtractor> CreateTargetExtractor(YAML::Node const& target_config);
+// NOTE(Jack): For those unfamiliar with the opencv type (or even those who know it well), this function signature might
+// look ugly. But what we need to remember is that a cv::Mat is basically just a smart pointer, and even though it is
+// passed here const, we can indeed still edit the data it points to.
+void DrawTarget(ExtractedTarget const& target, cv::Mat const& img);
 
-}  // namespace reprojection_calibration::feature_extraction
+}  // namespace reprojection::feature_extraction
