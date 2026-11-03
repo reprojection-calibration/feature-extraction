@@ -10,7 +10,6 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(apriltag REQUIRED)
 
-
 set(SRC_FILES
         src/april_tag_cpp_wrapper.cpp
         src/generated_apriltag_code/tagCustom36h11.c
@@ -45,13 +44,14 @@ target_link_libraries(${PROJECT_NAME}
             ${OpenCV_LIBS}
 )
 
-# For inexplicable reasons, the docker build-stage build will fail if we do not include this link directory...
-# Without this it works fine in CLion, but when we build it manually it gives us problems. I should note that I
-# diverged from the original "tip" about using april grid in cmake found here (https://github.com/amy-tabb/apriltag-cmake-example/tree/master).
-# Because I only wanted to use target specific commands, I omitted the link_directories() command and instead add
-# the april grid libraries via a target_link_libraries() command to our library.
-target_link_directories(${PROJECT_NAME} PUBLIC
-        ${apriltag_LIBDIR}
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+        DESTINATION include/${PROJECT_NAME}
+)
+install(TARGETS ${PROJECT_NAME}
+        EXPORT featureExtractionTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
 )
 
 include(CTest)
@@ -82,11 +82,6 @@ if (BUILD_TESTING)
                 ${PROJECT_NAME}
                 ${PRIVATE_LINK_LIBRARIES}
         )
-
-        if (REPROJECTION_ENABLE_COVERAGE)
-            target_compile_options(${TEST_NAME} PRIVATE --coverage)
-            target_link_options(${TEST_NAME} PRIVATE --coverage)
-        endif ()
 
         gtest_discover_tests(${TEST_NAME})
     endforeach ()
