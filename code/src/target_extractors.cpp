@@ -199,8 +199,6 @@ Aprilgrid3Extractor::Matrix42d Aprilgrid3Extractor::RefineCorners(cv::Mat const&
     return refined_extraction_corners.cast<double>();
 }
 
-
-
 // TODO TEST!
 ExtractedTarget Aprilgrid3Extractor::RemoveOutliers(Eigen::MatrixX2d const& raw_corners,
                                                     ExtractedTarget const& target) {

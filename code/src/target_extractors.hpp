@@ -8,8 +8,6 @@
 
 namespace reprojection::feature_extraction {
 
-
-
 class CheckerboardExtractor : public TargetExtractor {
    public:
     explicit CheckerboardExtractor(cv::Size const& pattern_size, double unit_dimension);
@@ -39,7 +37,8 @@ class Aprilgrid3Extractor : public TargetExtractor {
     // can see this when running the live demo that the indices do not show up in the expected logical row and column
     // order.
     // TODO(Jack): We need a better name that conotates its more complicated function, also calculating the points
-    static Eigen::ArrayXi VisibleGeometry(cv::Size const& pattern_size, std::vector<AprilTagDetection> const& detections);
+    static Eigen::ArrayXi VisibleGeometry(cv::Size const& pattern_size,
+                                          std::vector<AprilTagDetection> const& detections);
 
     static Eigen::MatrixX3d CornerPositions(Eigen::ArrayX2i const& indices, double unit_dimension);
 

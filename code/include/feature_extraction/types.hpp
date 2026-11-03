@@ -2,7 +2,8 @@
 
 #include <Eigen/Dense>
 
-// TODO(Jack): We need to remove all these types from the core calibration repo and use these instead.
+// TODO(Jack): We need to remove all these types and copy and pasted helper methods from the core calibration repo and
+// use these instead.
 
 namespace reprojection::feature_extraction {
 

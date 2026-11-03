@@ -2,7 +2,6 @@
 
 #include <gtest/gtest.h>
 
-
 #include "april_tag_cpp_wrapper.hpp"
 #include "target_generators.hpp"
 

@@ -1,9 +1,8 @@
 #pragma once
 
 #include <memory>
-#include <optional>
-
 #include <opencv2/opencv.hpp>
+#include <optional>
 
 #include "feature_extraction/types.hpp"
 
