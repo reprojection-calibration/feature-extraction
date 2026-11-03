@@ -69,4 +69,16 @@ struct TargetInfo {
     bool asymmetric;
 };
 
+inline std::string ToString(TargetType const target_type) {
+    if (target_type == TargetType::Aprilgrid3) {
+        return "aprilgrid3";
+    } else if (target_type == TargetType::Checkerboard) {
+        return "checkerboard";
+    } else if (target_type == TargetType::CircleGrid) {
+        return "circle_grid";
+    } else {
+        throw std::runtime_error("LIBRARY IMPLEMENTATION ERROR - Unrecognized argument passed to ToString(TargetType)");
+    }
+}
+
 }  // namespace reprojection::feature_extraction

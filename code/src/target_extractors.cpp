@@ -4,9 +4,6 @@ extern "C" {
 #include "generated_apriltag_code/tagCustom36h11.h"
 }
 
-#include "eigen_utilities/grid.hpp"
-#include "eigen_utilities/statistics.hpp"
-
 #include "utilities.hpp"
 
 namespace reprojection::feature_extraction {
@@ -16,8 +13,8 @@ namespace reprojection::feature_extraction {
 // rows/cols minus one.
 CheckerboardExtractor::CheckerboardExtractor(cv::Size const& pattern_size, const double unit_dimension)
     : TargetExtractor(pattern_size - cv::Size{1, 1}, unit_dimension) {
-    point_indices_ = eigen_utilities::GenerateGridIndices(pattern_size_.height, pattern_size_.width);
-    points_ = MatrixX3d{point_indices_.rows(), 3};
+    point_indices_ = GenerateGridIndices(pattern_size_.height, pattern_size_.width);
+    points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
     points_.col(2).setZero();  // Flat on calibration board, z=0.
 }
@@ -46,12 +43,12 @@ CircleGridExtractor::CircleGridExtractor(cv::Size const& pattern_size, const dou
     if (asymmetric_) {
         // NOTE(Jack): We reverse the order of the width and height here for the asymmetric case! Why that is... you
         // tell me boss...
-        point_indices_ = eigen_utilities::GenerateGridIndices(pattern_size.width, pattern_size.height, true);
+        point_indices_ = GenerateGridIndices(pattern_size.width, pattern_size.height, true);
     } else {
-        point_indices_ = eigen_utilities::GenerateGridIndices(pattern_size_.height, pattern_size_.width);
+        point_indices_ = GenerateGridIndices(pattern_size_.height, pattern_size_.width);
     }
 
-    points_ = MatrixX3d{point_indices_.rows(), 3};
+    points_ = Eigen::MatrixX3d{point_indices_.rows(), 3};
     points_.leftCols(2) = unit_dimension_ * point_indices_.cast<double>();
     points_.col(2).setZero();
 }
@@ -92,7 +89,7 @@ Aprilgrid3Extractor::Aprilgrid3Extractor(cv::Size const& pattern_size, const dou
     : TargetExtractor(pattern_size, unit_dimension),
       tag_family_{AprilTagFamily{tagCustom36h11_create(), tagCustom36h11_destroy}},
       tag_detector_{AprilTagDetector{tag_family_, {2.0, 0.0, 1, false, true}}} {
-    point_indices_ = eigen_utilities::GenerateGridIndices(2 * pattern_size_.height, 2 * pattern_size_.width);
+    point_indices_ = GenerateGridIndices(2 * pattern_size_.height, 2 * pattern_size_.width);
     points_ = CornerPositions(point_indices_, unit_dimension);
 }
 
@@ -103,8 +100,8 @@ std::optional<ExtractedTarget> Aprilgrid3Extractor::ExtractImplementation(cv::Ma
         return std::nullopt;
     }
 
-    MatrixX2d raw_corners{4 * std::size(raw_detections), 2};
-    MatrixX2d refined_corners{4 * std::size(raw_detections), 2};
+    Eigen::MatrixX2d raw_corners{4 * std::size(raw_detections), 2};
+    Eigen::MatrixX2d refined_corners{4 * std::size(raw_detections), 2};
     for (size_t i{0}; i < std::size(raw_detections); ++i) {
         // WARN(Jack): The homography can launch the corners outside the bound of the image, this is currently not
         // handled, and how that shows up in our code is not yet clear (2.10.2025).
@@ -116,7 +113,7 @@ std::optional<ExtractedTarget> Aprilgrid3Extractor::ExtractImplementation(cv::Ma
         refined_corners.block<4, 2>(4 * i, 0) = refined_extraction_corners;
     }
 
-    ArrayXi const mask{VisibleGeometry(pattern_size_, raw_detections)};
+    Eigen::ArrayXi const mask{VisibleGeometry(pattern_size_, raw_detections)};
     ExtractedTarget const target{{refined_corners, points_(mask, Eigen::all)}, point_indices_(mask, Eigen::all)};
 
     return RemoveOutliers(raw_corners, target);
@@ -128,8 +125,8 @@ std::optional<ExtractedTarget> Aprilgrid3Extractor::ExtractImplementation(cv::Ma
 // requirement to handle different size boards and different metric size tags, this is not trivial. This function is
 // the critical building block that is responsible for providing a mask which tells us, given the detection tag IDs,
 // which points are visible and which are not.
-ArrayXi Aprilgrid3Extractor::VisibleGeometry(cv::Size const& pattern_size,
-                                             std::vector<AprilTagDetection> const& detections) {
+Eigen::ArrayXi Aprilgrid3Extractor::VisibleGeometry(cv::Size const& pattern_size,
+                                                    std::vector<AprilTagDetection> const& detections) {
     std::vector<int> mask;
     for (auto const& detection : detections) {
         int const i{static_cast<int>(detection.id / pattern_size.width)};
@@ -146,11 +143,11 @@ ArrayXi Aprilgrid3Extractor::VisibleGeometry(cv::Size const& pattern_size,
         mask.push_back(corner_3);
     }
 
-    return eigen_utilities::ToEigen(mask);
+    return ToEigen(mask);
 }
 
-MatrixX3d Aprilgrid3Extractor::CornerPositions(ArrayX2i const& indices, double const unit_dimension) {
-    MatrixX3d points{indices.rows(), 3};
+Eigen::MatrixX3d Aprilgrid3Extractor::CornerPositions(Eigen::ArrayX2i const& indices, double const unit_dimension) {
+    Eigen::MatrixX3d points{indices.rows(), 3};
     for (int i{0}; i < indices.rows(); ++i) {
         // WARN(Jack): If we change the pattern (num_bits or design) then this (1/3) (4bits/12bits) will change! This
         // function is currently assuming that Aprilgrid3 will be fixed forever using the custom 36h11 tag family.
@@ -172,7 +169,8 @@ MatrixX3d Aprilgrid3Extractor::CornerPositions(ArrayX2i const& indices, double c
 // and use are found on the outside of this black ring, at the intersection of the black ring and the corner
 // element. This intersection is designed to provide the characteristic checkerboard like intersection which can be
 // refined using the cv::cornerSubPix() function to provide nearly exact corner pixel coordinates.
-Matrix42d Aprilgrid3Extractor::EstimateExtractionCorners(Matrix3d const& H, int const sqrt_num_bits) {
+Aprilgrid3Extractor::Matrix42d Aprilgrid3Extractor::EstimateExtractionCorners(Eigen::Matrix3d const& H,
+                                                                              int const sqrt_num_bits) {
     // NOTE(Jack): These corners have been reordered from how they are listed in the april tag documentation. The
     // current ordering matches our generated targets grid row/column indexing.
     Matrix42d const canonical_corners{{-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
@@ -186,7 +184,8 @@ Matrix42d Aprilgrid3Extractor::EstimateExtractionCorners(Matrix3d const& H, int 
     return extraction_corners;
 }
 
-Matrix42d Aprilgrid3Extractor::RefineCorners(cv::Mat const& image, Matrix42d const& extraction_corners) {
+Aprilgrid3Extractor::Matrix42d Aprilgrid3Extractor::RefineCorners(cv::Mat const& image,
+                                                                  Matrix42d const& extraction_corners) {
     // NOTE(Jack): Eigen is column major by default, but opencv is row major (like the rest of the world...) so we
     // need to specifically specify Eigen::RowMajor here in order for the cv::Mat view to make sense.
     Eigen::Matrix<float, 4, 2, Eigen::RowMajor> refined_extraction_corners{
@@ -200,18 +199,21 @@ Matrix42d Aprilgrid3Extractor::RefineCorners(cv::Mat const& image, Matrix42d con
     return refined_extraction_corners.cast<double>();
 }
 
+
+
 // TODO TEST!
-ExtractedTarget Aprilgrid3Extractor::RemoveOutliers(MatrixX2d const& raw_corners, ExtractedTarget const& target) {
-    ArrayXd const delta{(raw_corners.array() - target.bundle.pixels.array()).rowwise().norm()};
-    double const median{eigen_utilities::Median(delta)};
-    double const mad{eigen_utilities::Median((delta - median).abs())};
+ExtractedTarget Aprilgrid3Extractor::RemoveOutliers(Eigen::MatrixX2d const& raw_corners,
+                                                    ExtractedTarget const& target) {
+    Eigen::ArrayXd const delta{(raw_corners.array() - target.bundle.pixels.array()).rowwise().norm()};
+    double const median{Median(delta)};
+    double const mad{Median((delta - median).abs())};
 
     // NOTE(Jack): We only check that the delta is less than the threshold and not within an upper and lower bound
     // because lower deltas are ok (reflect a accurate extraction under our assumption).
     // "For normally distributed data k is taken to be 1.4826" - https://en.wikipedia.org/wiki/Median_absolute_deviation
     double const robust_threshold{median + 2 * 1.4826 * mad};
-    ArrayXb const mask{delta < std::max(robust_threshold, 1.0)};
-    ArrayXi const valid_indices{eigen_utilities::MaskToRowId(mask)};
+    Eigen::ArrayX<bool> const mask{delta < std::max(robust_threshold, 1.0)};
+    Eigen::ArrayXi const valid_indices{MaskToRowId(mask)};
 
     return target(valid_indices);
 }

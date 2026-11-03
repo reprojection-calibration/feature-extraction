@@ -1,8 +1,5 @@
 #include "feature_extraction/target_extraction.hpp"
 
-#include "types/calibration_types.hpp"
-#include "types/enums.hpp"
-
 #include "target_extractors.hpp"
 #include "utilities.hpp"
 
@@ -33,8 +30,8 @@ std::unique_ptr<TargetExtractor> CreateTargetExtractor(TargetInfo const& target_
 // TODO/WARN(Jack): This functions expects that the image has three channels but that is not enforced anywhere here.
 // What would happen if this was fed a grayscale image or a float image?
 void DrawTarget(ExtractedTarget const& target, cv::Mat const& img) {
-    MatrixX2d const& pixels{target.bundle.pixels};
-    ArrayX2i const& indices{target.indices};
+    Eigen::MatrixX2d const& pixels{target.bundle.pixels};
+    Eigen::ArrayX2i const& indices{target.indices};
 
     for (Eigen::Index i{0}; i < pixels.rows(); ++i) {
         cv::circle(img, cv::Point(pixels.row(i)[0], pixels.row(i)[1]), 5, cv::Scalar(0, 255, 0), 1, cv::LINE_8);

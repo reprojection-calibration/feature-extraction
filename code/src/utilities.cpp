@@ -27,8 +27,8 @@ cv::Mat ToGray(cv::Mat const& img) {
     return img_gray;
 }
 
-MatrixX2d ToEigen(std::vector<cv::Point2f> const& points) {
-    MatrixX2d eigen_points(std::size(points), 2);
+Eigen::MatrixX2d ToEigen(std::vector<cv::Point2f> const& points) {
+    Eigen::MatrixX2d eigen_points(std::size(points), 2);
     for (Eigen::Index i = 0; i < eigen_points.rows(); i++) {
         eigen_points.row(i)[0] = points[i].x;
         eigen_points.row(i)[1] = points[i].y;
@@ -44,6 +44,52 @@ double AlternatingSum(int const n, double const increment_1, double const increm
     }
 
     return sum;
+}
+
+Eigen::ArrayX2i GenerateGridIndices(int const rows, int const cols, bool const even_only) {
+    Eigen::ArrayXi const row_indices{Eigen::ArrayXi::LinSpaced(rows * cols, 0, rows - 1)};
+    Eigen::ArrayXi const col_indices{Eigen::ArrayXi::LinSpaced(cols, 0, cols).colwise().replicate(rows)};
+
+    Eigen::ArrayX2i grid_indices(rows * cols, 2);
+    grid_indices.col(0) = row_indices;
+    grid_indices.col(1) = col_indices;
+
+    if (even_only) {
+        // NOTE(Jack): Eigen does not provide direct way to apply the modulo operator, so we follow a method using a
+        // unaryExpr() that we adopted from here
+        // (https://stackoverflow.com/questions/35798698/eigen-matrix-library-coefficient-wise-modulo-operation)
+        Eigen::ArrayX<bool> const is_even_mask{
+            ((grid_indices.rowwise().sum().unaryExpr([](int const x) { return x % 2; })) == 0)};
+        Eigen::ArrayXi const even_row_ids{MaskToRowId(is_even_mask)};
+
+        return grid_indices(even_row_ids, Eigen::all);
+    }
+
+    return grid_indices;
+}
+
+// There has to be a more eloquent way to do this... but it gets the job done :)
+Eigen::ArrayXi MaskToRowId(Eigen::ArrayX<bool> const& mask) {
+    std::vector<int> row_ids;
+    row_ids.reserve(mask.rows());
+
+    for (Eigen::Index i{0}; i < mask.rows(); i++) {
+        if (mask(i) == true) {
+            row_ids.push_back(i);
+        }
+    }
+
+    return ToEigen(row_ids);
+}
+
+Eigen::ArrayXi ToEigen(std::vector<int> const& vector) {
+    return Eigen::Map<Eigen::ArrayXi const>(vector.data(), std::size(vector));
+}
+
+double Median(Eigen::ArrayXd data) {
+    std::sort(data.begin(), data.end());
+
+    return data.size() % 2 == 0 ? data.segment((data.size() - 2) / 2, 2).mean() : data(data.size() / 2);
 }
 
 }  // namespace reprojection::feature_extraction
