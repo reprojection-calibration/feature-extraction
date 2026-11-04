@@ -55,12 +55,12 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 install(EXPORT featureExtractionTargets
-        FILE featureExtractionTargets.cmake
+        FILE feature_extractionTargets.cmake
         NAMESPACE reprojection::
         DESTINATION lib/cmake/feature_extraction
 )
 install(FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/featureExtractionConfig.cmake
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/feature_extractionConfig.cmake
         DESTINATION lib/cmake/feature_extraction
 )
 
