@@ -54,6 +54,16 @@ install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
 )
 
+install(EXPORT featureExtractionTargets
+        FILE feature_extractionTargets.cmake
+        NAMESPACE reprojection::
+        DESTINATION lib/cmake/feature_extraction
+)
+install(FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/feature_extractionConfig.cmake
+        DESTINATION lib/cmake/feature_extraction
+)
+
 include(CTest)
 if (BUILD_TESTING)
     find_package(GTest REQUIRED)
