@@ -8,6 +8,7 @@ apt-get install --no-install-recommends --yes \
     ca-certificates \
     cmake \
     git \
-    ninja-build
+    ninja-build \
+    wget
 
 rm --force --recursive /var/lib/apt/lists/*

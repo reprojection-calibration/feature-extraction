@@ -96,3 +96,21 @@ if (BUILD_TESTING)
         gtest_discover_tests(${TEST_NAME})
     endforeach ()
 endif ()
+
+if (BUILD_DOCS)
+    find_package(Doxygen REQUIRED)
+
+    set(DOXYGEN_ALWAYS_DETAILED_SEC YES) # Required to display the inline code when their is only a brief descriptor.
+    set(DOXYGEN_HIDE_UNDOC_MEMBERS YES)
+    set(DOXYGEN_HIDE_UNDOC_CLASSES YES)
+    set(DOXYGEN_HTML_OUTPUT "${PROJECT_VERSION}")
+    set(DOXYGEN_OUTPUT_DIRECTORY "docs")
+    set(DOXYGEN_WARN_IF_UNDOCUMENTED "NO")
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_SOURCE_DIR}/README.md")
+    set(DOXYGEN_PROJECT_NAME "Feature Extraction")
+
+    doxygen_add_docs(
+            docs
+            "${PROJECT_SOURCE_DIR}"
+    )
+endif ()
