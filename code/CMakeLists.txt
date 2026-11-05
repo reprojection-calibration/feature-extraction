@@ -106,6 +106,8 @@ if (BUILD_DOCS)
     set(DOXYGEN_HTML_OUTPUT "${PROJECT_VERSION}")
     set(DOXYGEN_OUTPUT_DIRECTORY "docs")
     set(DOXYGEN_WARN_IF_UNDOCUMENTED "NO")
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_SOURCE_DIR}/README.md")
+    set(DOXYGEN_PROJECT_NAME "Feature Extraction")
 
     doxygen_add_docs(
             docs
