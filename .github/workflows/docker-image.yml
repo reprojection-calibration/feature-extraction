@@ -8,8 +8,63 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the code-checks-stage
-      run: docker build . --file building/Dockerfile --tag feature-extraction:code-checks-$(date +%s) --target code-checks-stage
-    - name: Build the build-stage
-      run: docker build . --file building/Dockerfile --tag feature-extraction:build-$(date +%s) --target build-stage
+      - uses: actions/checkout@v7
+      - name: Build the code-checks-stage
+        run: docker build . --file building/Dockerfile --tag feature-extraction:code-checks --target code-checks-stage
+      - name: Build the build-stage
+        run: docker build . --file building/Dockerfile --tag feature-extraction:build --target build-stage
+  build-docs-webpage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the docs-stage
+        run: docker build . --file building/Dockerfile --tag feature-extraction:docs --target docs-stage
+
+      - name: Copy Doxygen directory to host
+        run: |
+          set -eoux pipefail
+          
+          mkdir --parents "${RUNNER_TEMP}/docs"
+          
+          container_id="$(docker create feature-extraction:docs)"
+          docker cp \
+            "${container_id}:/buildroot/build-docs/docs/0.0.0/." \
+            "${RUNNER_TEMP}/docs/"
+          docker rm "${container_id}"
+
+      - name: Upload docs webpage
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-webpage
+          path: ${{ runner.temp }}/docs
+          if-no-files-found: error
+
+  deploy-docs-webpage:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-docs-webpage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - name: Download built webpage
+        uses: actions/download-artifact@v8
+        with:
+          name: docs-webpage
+          path: ${{ runner.temp }}/website
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/website
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

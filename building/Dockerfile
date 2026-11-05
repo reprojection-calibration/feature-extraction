@@ -42,7 +42,7 @@ RUN --mount=type=bind,source=${BUILD_LIBRARY},target=/temporary/${BUILD_LIBRARY}
 
 ENTRYPOINT ["/buildroot/build/webcam_demo", "-c", "/temporary/code/examples/target_config.yaml"]
 
-FROM base-stage AS doxygen-stage
+FROM base-stage AS docs-stage
 
 ARG INSTALL_DOXYGEN=building/install_scripts/install_doxygen.sh
 RUN --mount=type=bind,source=${INSTALL_DOXYGEN},target=/temporary/${INSTALL_DOXYGEN} \
@@ -53,11 +53,12 @@ RUN --mount=type=bind,source=code/,target=/temporary/code \
         -DBUILD_DOCS=ON; \
     cmake --build "/buildroot/build-docs" --target docs
 
-FROM nginx:1.29.2 AS doxygen-report-stage
+
+FROM nginx:1.29.2 AS docs-report-stage
 
 # WARN(Jack): Hardcoding the doc version here seems hacky. If we just use this for local development it can work but I
 # would rather have something like a version env var.
-COPY --from=doxygen-stage  /buildroot/build-docs/docs/0.0.0  /usr/share/nginx/html
+COPY --from=docs-stage  /buildroot/build-docs/docs/0.0.0  /usr/share/nginx/html
 
 FROM base-stage AS development-stage
 

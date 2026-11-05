@@ -7,8 +7,8 @@ echo "Make sure to rebuild the container each time you want to view the latest d
 docker run \
   --detach \
   --interactive \
-  --name doxygen-report \
+  --name docs-report \
   --publish 8080:80 \
   --rm \
   --tty \
-  feature-extraction:doxygen-report
+  feature-extraction:docs-report
