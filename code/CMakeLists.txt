@@ -6,6 +6,8 @@ project(
         LANGUAGES C CXX
 )
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(apriltag REQUIRED)
@@ -26,7 +28,7 @@ set(PRIVATE_LINK_LIBRARIES
         Eigen3::Eigen
 )
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME}
         ${SRC_FILES}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
