@@ -6,6 +6,7 @@ on:
     branches: [ "main" ]
 jobs:
   build:
+    name: docker-code-checks-and-build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -14,6 +15,7 @@ jobs:
       - name: Build the build-stage
         run: docker build . --file building/Dockerfile --tag feature-extraction:build --target build-stage
   build-docs-webpage:
+    name: build-docs-webpage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
