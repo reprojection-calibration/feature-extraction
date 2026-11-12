@@ -25,7 +25,7 @@ std::optional<ExtractedTarget> CheckerboardExtractor::ExtractImplementation(cv::
     std::vector<cv::Point2f> corners;
     bool const pattern_found{cv::findChessboardCorners(
         image, pattern_size_, corners,
-        cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK)};
+        cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE | cv::CALIB_CB_FAST_CHECK)};
 
     if (not pattern_found) {
         return std::nullopt;
